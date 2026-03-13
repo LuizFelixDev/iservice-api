@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: iservice_db
+    restart: always
+    environment:
+      POSTGRES_USER: iservice
+      POSTGRES_PASSWORD: 153rv1c3
+      POSTGRES_DB: iservice
+    ports:
+      - "5433:5432"
+    volumes:
+      - iservice_db_data:/var/lib/postgresql/data
+
+volumes:
+  iservice_db_data:
