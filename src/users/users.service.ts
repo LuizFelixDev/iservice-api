@@ -123,4 +123,18 @@ export class UsersService {
     await this.userRepository.save(user);
     return UserResponseDto.fromEntity(user);
   }
+
+  async findMe(id: number): Promise<UserResponseDto> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['roles', 'profile'], 
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
+    return UserResponseDto.fromEntity(user);
+  }
+
 }
