@@ -12,6 +12,7 @@ import { DadosPerfilSocial } from './entities/user.entity';
 import { RoleName } from '../roles/enums/role.enum';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UserProfileResponseDto } from './dto/user-profile-response.dto';
 import { Profile } from './entities/profile.entity';
 import { RegisterDto } from '../auth/dto/register.dto';
 
@@ -124,17 +125,16 @@ export class UsersService {
     return UserResponseDto.fromEntity(user);
   }
 
-  async findMe(id: number): Promise<UserResponseDto> {
+  async findMe(id: number): Promise<UserProfileResponseDto> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['roles', 'profile'], 
+      relations: ['roles', 'profile'],
     });
 
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    return UserResponseDto.fromEntity(user);
+    return UserProfileResponseDto.fromEntity(user);
   }
-
 }

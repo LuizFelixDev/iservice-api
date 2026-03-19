@@ -2,7 +2,7 @@ import { Controller, Patch, UseGuards, Body, Req, Get } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { UserResponseDto } from './dto/user-response.dto';
+import { UserProfileResponseDto } from './dto/user-profile-response.dto';
 
 interface RequestWithUser {
   user: {
@@ -26,8 +26,7 @@ export class UsersController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getMe(@Req() req: RequestWithUser): Promise<UserResponseDto> {
+  async getMe(@Req() req: RequestWithUser): Promise<UserProfileResponseDto> {
     return this.usersService.findMe(req.user.id);
   }
-
 }
