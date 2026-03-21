@@ -1,14 +1,14 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: postgis/postgis:latest
     container_name: iservice_db
     restart: always
     environment:
-      POSTGRES_USER: iservice
-      POSTGRES_PASSWORD: 153rv1c3
-      POSTGRES_DB: iservice
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5433:5432"
+      - "${DB_PORT_DOCKER:-5433}:5432"
     volumes:
       - iservice_db_data:/var/lib/postgresql/data
 
