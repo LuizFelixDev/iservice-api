@@ -1,5 +1,4 @@
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
-import { UserResponseDto } from 'src/users/dto/user-response.dto';
 
 export class LoginDto {
   @IsEmail({}, { message: 'E-mail inválido' })
