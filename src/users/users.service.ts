@@ -23,6 +23,9 @@ export class UsersService {
     private rolesService: RolesService,
   ) {}
 
+  /**
+   * Lógica para Login Social (Google/Facebook)
+   */
   async buscarOuCriarSocial(perfil: DadosPerfilSocial): Promise<User> {
     let usuario = await this.userRepository.findOne({
       where: { email: perfil.email },
@@ -46,6 +49,9 @@ export class UsersService {
     return usuario;
   }
 
+  /**
+   * Registo de novo utilizador com E-mail e Password
+   */
   async createLocalUser(dados: RegisterDto) {
     const usuarioExistente = await this.userRepository.findOne({
       where: { email: dados.email },
@@ -71,6 +77,9 @@ export class UsersService {
     return UserResponseDto.fromEntity(usuarioSalvo);
   }
 
+  /**
+   * Validação de credenciais para Login
+   */
   async validateUser(email: string, pass: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: { email },
@@ -90,6 +99,9 @@ export class UsersService {
     return null;
   }
 
+  /**
+   * Procura utilizador por ID com todas as relações
+   */
   async findById(id: number): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
@@ -100,7 +112,11 @@ export class UsersService {
     return user;
   }
 
+  /**
+   * Atualização de Perfil com Promoção Automática para Profissional
+   */
   async updateProfile(userId: number, dto: UpdateProfileDto) {
+    // 1. Carregar utilizador com as roles para validar permissões atuais
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['profile', 'roles'],
@@ -108,10 +124,12 @@ export class UsersService {
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
 
+    // Inicializa o objeto profile se não existir
     if (!user.profile) {
       user.profile = new Profile();
     }
 
+    // 2. Atualizar Geolocalização (Critério de Aceite 1)
     if (dto.latitude !== undefined && dto.longitude !== undefined) {
       user.profile.location = {
         type: 'Point',
@@ -119,22 +137,43 @@ export class UsersService {
       };
     }
 
+    // 3. Atualizar Bio e outros campos (Critério de Aceite 1)
     Object.assign(user.profile, dto);
-    await this.userRepository.save(user);
-    return UserResponseDto.fromEntity(user);
-  }
 
-  async findMe(id: number): Promise<UserResponseDto> {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      relations: ['roles', 'profile'], 
-    });
+    // --- LÓGICA DE UPGRADE AUTOMÁTICO ---
 
-    if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
+    // 4. Verificar se já é profissional (Corrigido para evitar o erro de Enum do ESLint)
+    const jaEProfissional = user.roles.some(
+      (role) => (role.name as unknown as RoleName) === RoleName.PROFESSIONAL,
+    );
+
+    // Requisitos mínimos: Bio preenchida e Localização definida
+    const temBio = !!user.profile.bio;
+    const temLocalizacao = !!user.profile.location;
+
+    if (!jaEProfissional && temBio && temLocalizacao) {
+      const roleProfissional = await this.rolesService.findByName(
+        RoleName.PROFESSIONAL,
+      );
+
+      if (roleProfissional) {
+        // 5. Adicionar a nova role SEM apagar a de USER
+        user.roles.push(roleProfissional);
+      }
     }
 
+    // 6. Salvar todas as alterações
+    await this.userRepository.save(user);
+
+    // Retorna o DTO formatado (Critério de Aceite 2)
     return UserResponseDto.fromEntity(user);
   }
 
+  /**
+   * Retorna os dados do utilizador logado
+   */
+  async findMe(id: number): Promise<UserResponseDto> {
+    const user = await this.findById(id);
+    return UserResponseDto.fromEntity(user);
+  }
 }
