@@ -142,9 +142,9 @@ export class UsersService {
 
     // --- LÓGICA DE UPGRADE AUTOMÁTICO ---
 
-    // 4. Verificar se já é profissional usando .some() (Evitar duplicidade)
+    // 4. Verificar se já é profissional (Corrigido para evitar o erro de Enum do ESLint)
     const jaEProfissional = user.roles.some(
-      (role) => role.name === RoleName.PROFESSIONAL,
+      (role) => (role.name as unknown as RoleName) === RoleName.PROFESSIONAL,
     );
 
     // Requisitos mínimos: Bio preenchida e Localização definida
@@ -152,18 +152,20 @@ export class UsersService {
     const temLocalizacao = !!user.profile.location;
 
     if (!jaEProfissional && temBio && temLocalizacao) {
-      const roleProfissional = await this.rolesService.findByName(RoleName.PROFESSIONAL);
-      
+      const roleProfissional = await this.rolesService.findByName(
+        RoleName.PROFESSIONAL,
+      );
+
       if (roleProfissional) {
-        // 5. Adicionar a nova role SEM apagar a de USER (Push)
+        // 5. Adicionar a nova role SEM apagar a de USER
         user.roles.push(roleProfissional);
       }
     }
 
-    // 6. Salvar todas as alterações (User, Profile e Tabela Pivô roles)
+    // 6. Salvar todas as alterações
     await this.userRepository.save(user);
-    
-    // Retorna o DTO formatado para o front-end (Critério de Aceite 2)
+
+    // Retorna o DTO formatado (Critério de Aceite 2)
     return UserResponseDto.fromEntity(user);
   }
 
