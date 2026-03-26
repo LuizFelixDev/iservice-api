@@ -120,21 +120,31 @@ export class UsersService {
     }
 
     Object.assign(user.profile, dto);
+
+    const jaEProfissional = user.roles.some(
+      (role) => (role.name as unknown as RoleName) === RoleName.PROFESSIONAL,
+    );
+
+    const temBio = !!user.profile.bio;
+    const temLocalizacao = !!user.profile.location;
+
+    if (!jaEProfissional && temBio && temLocalizacao) {
+      const roleProfissional = await this.rolesService.findByName(
+        RoleName.PROFESSIONAL,
+      );
+
+      if (roleProfissional) {
+        user.roles.push(roleProfissional);
+      }
+    }
+
     await this.userRepository.save(user);
+
     return UserResponseDto.fromEntity(user);
   }
 
   async findMe(id: number): Promise<UserResponseDto> {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      relations: ['roles', 'profile'], 
-    });
-
-    if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
-    }
-
+    const user = await this.findById(id);
     return UserResponseDto.fromEntity(user);
   }
-
 }
