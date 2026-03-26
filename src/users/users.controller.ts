@@ -29,5 +29,4 @@ export class UsersController {
   async getMe(@Req() req: RequestWithUser): Promise<UserResponseDto> {
     return this.usersService.findMe(req.user.id);
   }
-
 }

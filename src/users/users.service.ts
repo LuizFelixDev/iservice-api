@@ -124,6 +124,11 @@ export class UsersService {
     const jaEProfissional = user.roles.some(
       (role) => (role.name as unknown as RoleName) === RoleName.PROFESSIONAL,
     );
+  async findMe(id: number): Promise<UserResponseDto> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['roles', 'profile'],
+    });
 
     const temBio = !!user.profile.bio;
     const temLocalizacao = !!user.profile.location;
