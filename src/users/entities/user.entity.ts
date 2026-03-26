@@ -1,7 +1,15 @@
-import { Column, Entity, ManyToMany, JoinTable, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToMany,
+  JoinTable,
+  OneToOne,
+  OneToMany,
+} from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Role } from '../../roles/entities/role.entity';
 import { Profile } from './profile.entity';
+import { Job } from 'src/jobs/entities/job.entity';
 
 export enum Provider {
   LOCAL = 'local',
@@ -68,4 +76,10 @@ export class User extends BaseEntity {
 
     return user;
   }
+
+  @OneToMany(() => Job, (job) => job.client)
+  requestedJobs: Job[];
+
+  @OneToMany(() => Job, (job) => job.professional)
+  acceptedJobs: Job[];
 }

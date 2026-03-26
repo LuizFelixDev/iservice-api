@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     UsersModule,
     AuthModule,
     RolesModule,
+    JobsModule,
   ],
   providers: [
     {
