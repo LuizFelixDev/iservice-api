@@ -2,10 +2,16 @@
 
 Bem-vindo ao repositório oficial da API do **iService**! Este é o back-end do nosso marketplace de serviços on-demand, responsável por conectar clientes a profissionais locais em tempo real utilizando buscas geográficas avançadas.
 
-## 🛠️ Tecnologias Utilizadas
-* **Framework:** [NestJS](https://nestjs.com/) (TypeScript)
-* **Banco de Dados:** PostgreSQL com a extensão **PostGIS** (para dados espaciais e geolocalização)
-* **ORM:** TypeORM
+## 📚 Documentação do Projeto (Artefatos)
+Todos os documentos de engenharia de software elaborados para a disciplina encontram-se na pasta `/docs`:
+* [Documento de Visão](./docs/documento_visao.md)
+* [Modelo de Dados e Dicionário](./docs/modelo_dados.md)
+* [Lista de User Stories](./docs/user_stories.md)
+
+## 🛠️ Tecnologias Utilizadas e Tutoriais
+* **Framework:** [NestJS](https://nestjs.com/) (TypeScript) - [Acessar Tutorial](https://docs.nestjs.com/)
+* **Banco de Dados:** PostgreSQL com a extensão **PostGIS** (para dados espaciais) - [Acessar Tutorial](https://postgis.net/documentation/getting_started/)
+* **ORM:** TypeORM - [Acessar Tutorial](https://typeorm.io/)
 * **Autenticação:** JWT (JSON Web Tokens) e Google OAuth
 * **Infraestrutura Local:** Docker & Docker Compose
 
@@ -22,7 +28,7 @@ Antes de começar, certifique-se de ter as seguintes ferramentas instaladas em s
 ### 2. Configurando o Ambiente
 Clone o repositório para a sua máquina e instale as dependências do Node:
 
-    git clone https://github.com/luizfelixdev/iservice-api.git
+    git clone [https://github.com/luizfelixdev/iservice-api.git](https://github.com/luizfelixdev/iservice-api.git)
     cd iservice-api
     npm install
 
@@ -30,9 +36,9 @@ Clone o repositório para a sua máquina e instale as dependências do Node:
 
 Nós não commitamos senhas e chaves secretas no GitHub! Para que o projeto funcione na sua máquina, siga estes passos:
 
-- Crie uma cópia do arquivo .env.example e renomeie-a para .env.
-- Solicite as chaves secretas reais (como o JWT_SECRET e credenciais do banco) ao Tech Lead do projeto.
-- Preencha os valores correspondentes dentro do seu novo arquivo .env.
+- Crie uma cópia do arquivo `.env.example` e renomeie-a para `.env`.
+- Solicite as chaves secretas reais (como o `JWT_SECRET` e credenciais do banco) ao Tech Lead do projeto.
+- Preencha os valores correspondentes dentro do seu novo arquivo `.env`.
 
 ### 4. Subindo o Banco de Dados (Docker)
 
@@ -40,16 +46,16 @@ A nossa API depende do PostgreSQL e do PostGIS para funcionar e salvar as locali
 
     docker-compose up -d
 
-💡 Dica: O -d faz o container rodar em segundo plano. O banco estará mapeado na porta 5433 para não conflitar com outras instalações de Postgres.
+💡 Dica: O `-d` faz o container rodar em segundo plano. O banco estará mapeado na porta `5433` para não conflitar com outras instalações de Postgres.
 
 ### 5. Iniciando a API
 
-Com o banco de dados rodando e o arquivo .env configurado corretamente, inicie o servidor em modo de desenvolvimento:
+Com o banco de dados rodando e o arquivo `.env` configurado corretamente, inicie o servidor em modo de desenvolvimento:
 
     npm run start:dev
 
 A API estará rodando e escutando requisições em:
-http://localhost:8404
+`http://localhost:8404`
 
 ---
 
@@ -57,9 +63,9 @@ http://localhost:8404
 
 Para mantermos a nossa base de código limpa, legível e livre de bugs, utilizamos o ESLint e o Prettier.
 
-🚨 Regra de Ouro: Código fora do padrão não entra na branch principal.
+🚨 **Regra de Ouro:** Código fora do padrão não entra na branch principal.
 
-Nós possuímos uma esteira de Integração Contínua (CI) configurada no GitHub Actions. Toda vez que você finalizar uma tarefa e abrir um Pull Request (PR) para as branches main ou dev, o GitHub criará uma máquina virtual e testará o seu código automaticamente.
+Nós possuímos uma esteira de Integração Contínua (CI) configurada no GitHub Actions. Toda vez que você finalizar uma tarefa e abrir um Pull Request (PR) para as branches `main` ou `dev`, o GitHub criará uma máquina virtual e testará o seu código automaticamente.
 
 O botão de Merge será BLOQUEADO pelo sistema se:
 
@@ -69,7 +75,7 @@ O botão de Merge será BLOQUEADO pelo sistema se:
 
 ### 💡 Como evitar que o seu PR seja reprovado?
 
-Crie o hábito de rodar o fiscal de código na sua própria máquina antes de dar o git commit e fazer o push:
+Crie o hábito de rodar o fiscal de código na sua própria máquina antes de dar o `git commit` e fazer o push:
 
     npm run lint
     npm run lint --fix
@@ -80,11 +86,11 @@ Crie o hábito de rodar o fiscal de código na sua própria máquina antes de da
 
 | Comando | O que ele faz |
 |--------|--------------|
-| npm run start:dev | Inicia o servidor com hot-reload |
-| npm run build | Compila o projeto TypeScript para JavaScript (pasta /dist) |
-| npm run lint | Verifica regras de código |
-| docker-compose up -d | Sobe o banco de dados |
-| docker-compose down | Para e remove os containers |
+| `npm run start:dev` | Inicia o servidor com hot-reload |
+| `npm run build` | Compila o projeto TypeScript para JavaScript (pasta `/dist`) |
+| `npm run lint` | Verifica regras de código |
+| `docker-compose up -d` | Sobe o banco de dados |
+| `docker-compose down` | Para e remove os containers |
 
 ---
 
