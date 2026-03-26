@@ -127,7 +127,7 @@ export class UsersService {
   async findMe(id: number): Promise<UserResponseDto> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['roles', 'profile'], 
+      relations: ['roles', 'profile'],
     });
 
     if (!user) {
@@ -136,5 +136,4 @@ export class UsersService {
 
     return UserResponseDto.fromEntity(user);
   }
-
 }

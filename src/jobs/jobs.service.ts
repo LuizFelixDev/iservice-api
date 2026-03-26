@@ -1,26 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateJobDto } from './dto/create-job.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Job } from './entities/job.entity';
-import { User } from 'src/users/entities/user.entity';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class JobsService {
   constructor(
     @InjectRepository(Job)
     private jobRepository: Repository<Job>,
-
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private userRepository: UsersService,
   ) {}
 
   async create(createJobDto: CreateJobDto, userId: number) {
-    const user = await this.userRepository.findOneBy({ id: userId });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    const user = await this.userRepository.findById(userId);
 
     const job = this.jobRepository.create({
       description: createJobDto.description,
