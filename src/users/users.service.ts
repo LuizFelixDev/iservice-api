@@ -23,7 +23,6 @@ export class UsersService {
     private rolesService: RolesService,
   ) {}
 
-  
   async buscarOuCriarSocial(perfil: DadosPerfilSocial): Promise<User> {
     let usuario = await this.userRepository.findOne({
       where: { email: perfil.email },
@@ -47,7 +46,6 @@ export class UsersService {
     return usuario;
   }
 
-  
   async createLocalUser(dados: RegisterDto) {
     const usuarioExistente = await this.userRepository.findOne({
       where: { email: dados.email },
@@ -73,7 +71,6 @@ export class UsersService {
     return UserResponseDto.fromEntity(usuarioSalvo);
   }
 
-  
   async validateUser(email: string, pass: string): Promise<User | null> {
     const user = await this.userRepository.findOne({
       where: { email },
@@ -93,7 +90,6 @@ export class UsersService {
     return null;
   }
 
-  
   async findById(id: number): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
@@ -104,9 +100,7 @@ export class UsersService {
     return user;
   }
 
-  
   async updateProfile(userId: number, dto: UpdateProfileDto) {
-    
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['profile', 'roles'],
@@ -114,12 +108,10 @@ export class UsersService {
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
 
-    
     if (!user.profile) {
       user.profile = new Profile();
     }
 
-    
     if (dto.latitude !== undefined && dto.longitude !== undefined) {
       user.profile.location = {
         type: 'Point',
@@ -127,15 +119,12 @@ export class UsersService {
       };
     }
 
-    
     Object.assign(user.profile, dto);
 
-    
     const jaEProfissional = user.roles.some(
       (role) => (role.name as unknown as RoleName) === RoleName.PROFESSIONAL,
     );
 
-    
     const temBio = !!user.profile.bio;
     const temLocalizacao = !!user.profile.location;
 
@@ -145,20 +134,25 @@ export class UsersService {
       );
 
       if (roleProfissional) {
-        
         user.roles.push(roleProfissional);
       }
     }
 
     await this.userRepository.save(user);
 
-    
     return UserResponseDto.fromEntity(user);
   }
 
-  
   async findMe(id: number): Promise<UserResponseDto> {
-    const user = await this.findById(id);
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['roles', 'profile'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado');
+    }
+
     return UserResponseDto.fromEntity(user);
   }
 }
