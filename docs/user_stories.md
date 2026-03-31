@@ -312,3 +312,103 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
     </td>
   </tr>
 </table>
+
+### User Story US05 - Avaliar Serviço e Profissional
+
+<table>
+  <tr>
+    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US05</th>
+  </tr>
+  <tr>
+    <td style="width:25%;padding:6px;"><strong>Título</strong></td>
+    <td style="padding:6px;">Avaliar serviço concluído e o profissional envolvido</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Identificação</strong></td>
+    <td style="padding:6px;">US05 - Avaliar Serviço</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Story / Descrição</strong></td>
+    <td style="padding:6px;">
+      <strong>Como</strong> <em>Cliente</em>,<br>
+      <strong>Quero</strong> <em>avaliar o serviço prestado após a conclusão</em>,<br>
+      <strong>Para</strong> <em>compartilhar minha experiência e ajudar outros usuários a escolherem profissionais de qualidade.</em>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Regras de Negócio (RN)</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>RN01 - Restrição de Status:</strong> A avaliação só pode ser realizada para Jobs com status <code>COMPLETED</code>.</li>
+        <li><strong>RN02 - Avaliação Única:</strong> Cada cliente pode avaliar um Job apenas uma vez.</li>
+        <li><strong>RN03 - Integridade da Nota:</strong> A avaliação deve conter uma nota entre <code>1</code> e <code>5</code> estrelas e um comentário opcional.</li>
+        <li><strong>RN04 - Associação Correta:</strong> A avaliação deve estar vinculada ao <code>job_id</code> e ao <code>professional_id</code>.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Mensagens do Sistema</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>MSG01 (Sucesso):</strong> "Avaliação registrada com sucesso."</li>
+        <li><strong>MSG02 (Erro - RN01):</strong> "Só é possível avaliar serviços concluídos."</li>
+        <li><strong>MSG03 (Erro - RN02):</strong> "Este serviço já foi avaliado."</li>
+        <li><strong>MSG04 (Erro - RN03):</strong> "A nota deve estar entre 1 e 5 estrelas."</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Modelo de Dados Relacionado</strong></td>
+    <td style="padding:6px;">
+      Fragmento da Entidade <code>Rating</code> impactada:<br>
+      - <code>id</code> (UUID)<br>
+      - <code>job_id</code> (UUID)<br>
+      - <code>client_id</code> (UUID)<br>
+      - <code>professional_id</code> (UUID)<br>
+      - <code>rating</code> (Integer: 1-5)<br>
+      - <code>comment</code> (Text, Opcional)<br>
+      - <code>created_at</code> (Timestamp)
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Testes de Aceitação (TA)</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>TA05.01 - Avaliação com Sucesso:</strong><br>
+        <em>Dado que</em> o Job está com status COMPLETED,<br>
+        <em>Quando</em> o cliente envia uma avaliação válida,<br>
+        <em>Então</em> o sistema salva a avaliação e retorna MSG01.</li>
+
+        <li><strong>TA05.02 - Tentativa Antes da Conclusão:</strong><br>
+        <em>Dado que</em> o Job está com status ACCEPTED,<br>
+        <em>Quando</em> o cliente tenta avaliar,<br>
+        <em>Então</em> o sistema bloqueia e retorna MSG02.</li>
+
+        <li><strong>TA05.03 - Avaliação Duplicada:</strong><br>
+        <em>Dado que</em> o cliente já avaliou o Job,<br>
+        <em>Quando</em> tenta avaliar novamente,<br>
+        <em>Então</em> o sistema retorna MSG03.</li>
+
+        <li><strong>TA05.04 - Nota Inválida:</strong><br>
+        <em>Dado que</em> a nota enviada está fora do intervalo permitido,<br>
+        <em>Quando</em> o cliente envia a avaliação,<br>
+        <em>Então</em> o sistema retorna MSG04.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Estimativa</strong></td>
+    <td style="padding:6px;">10h</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Responsáveis</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>Analista:</strong> Caio Lucas Lopes</li>
+        <li><strong>Desenvolvedor:</strong> Eduardo Nascimento (Back-end) / Luiz Henrique (Front-end)</li>
+        <li><strong>Revisor:</strong> Kaique</li>
+        <li><strong>Testador:</strong> Isaque Guimaraes</li>
+      </ul>
+    </td>
+  </tr>
+</table>
