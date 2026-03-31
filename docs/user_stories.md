@@ -159,15 +159,19 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
 
 <br>
 
-### User Story US03 - Manter Serviço (Jobs e Matchmaking)
+### User Story US03 - Manter Serviço na visão do cliente (Jobs e Matchmaking)
 
 <table>
   <tr>
-    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US03</th>
+    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">
+      📌 User Story - US03
+    </th>
   </tr>
   <tr>
     <td style="width:25%;padding:6px;"><strong>Título</strong></td>
-    <td style="padding:6px;">Fluxo de criação de demanda com GPS, exibição no radar e aceite (Match).</td>
+    <td style="padding:6px;">
+      Criação e acompanhamento de solicitação de serviço com localização via GPS.
+    </td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Identificação</strong></td>
@@ -176,20 +180,25 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
   <tr>
     <td style="padding:6px;"><strong>Story</strong></td>
     <td style="padding:6px;">
-      Como <em>cliente</em>, quero <em>solicitar um serviço compartilhando meu GPS</em>, e como <em>profissional</em>, quero <em>ver demandas no meu radar para aceitá-las</em>.
+      Como <em>cliente</em>, quero 
+      <em>solicitar um serviço informando minha localização via GPS</em>, 
+      para que eu possa 
+      <em>receber atendimento de um profissional próximo e acompanhar o status da minha solicitação</em>.
     </td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Requisitos Relacionados</strong></td>
-    <td style="padding:6px;">RF03.01, RF03.02, RF03.03, RF03.04</td>
+    <td style="padding:6px;">RF03.01, RF03.02, RF03.04</td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Critérios de Aceitação</strong></td>
     <td style="padding:6px;">
       <ul>
-        <li>A criação do Job deve obrigatoriamente registrar um ponto geográfico (PostGIS).</li>
-        <li>O Radar deve listar apenas Jobs com status 'SEARCHING' dentro de um raio de distância válido.</li>
-        <li>O aceite do Job por um profissional deve ser atômico (evitar que dois aceitem ao mesmo tempo).</li>
+        <li>O cliente deve conseguir criar uma solicitação informando descrição e localização (latitude e longitude).</li>
+        <li>A localização deve ser armazenada como um ponto geográfico válido (PostGIS).</li>
+        <li>O cliente deve visualizar a lista de suas solicitações ordenadas por data de criação.</li>
+        <li>O cliente deve conseguir visualizar o status atual da solicitação (SEARCHING, NEGOTIATING, ACCEPTED, COMPLETED, CANCELED).</li>
+        <li>O cliente deve visualizar quando um profissional aceitar sua solicitação.</li>
       </ul>
     </td>
   </tr>
@@ -197,9 +206,11 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
     <td style="padding:6px;"><strong>Testes de Aceitação</strong></td>
     <td style="padding:6px;">
       <ul>
-        <li>TA03.01 - Criação de Job salva latitude e longitude corretamente no banco.</li>
-        <li>TA03.02 - Profissional visualiza no feed apenas Jobs próximos à sua localização atual.</li>
-        <li>TA03.03 - Ao aceitar um Job, o status muda para ACCEPTED e o professional_id é vinculado.</li>
+        <li>TA03.01 - Ao criar um Job, latitude e longitude são armazenadas corretamente no banco.</li>
+        <li>TA03.02 - O cliente visualiza apenas suas próprias solicitações.</li>
+        <li>TA03.03 - A lista de solicitações é exibida em ordem decrescente de criação.</li>
+        <li>TA03.04 - O status da solicitação é atualizado corretamente ao longo do fluxo.</li>
+        <li>TA03.05 - O cliente consegue identificar quando um profissional aceitou sua solicitação.</li>
       </ul>
     </td>
   </tr>
