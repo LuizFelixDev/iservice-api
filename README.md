@@ -7,6 +7,7 @@ Todos os documentos de engenharia de software elaborados para a disciplina encon
 * [Documento de Visão](./docs/documento_visao.md)
 * [Modelo de Dados e Dicionário](./docs/modelo_dados.md)
 * [Lista de User Stories](./docs/user_stories.md)
+* [Arquitetura do projeto](./docs/arquitetura.md)
 
 ## 🛠️ Tecnologias Utilizadas e Tutoriais
 * **Framework:** [NestJS](https://nestjs.com/) (TypeScript) - [Acessar Tutorial](https://docs.nestjs.com/)
