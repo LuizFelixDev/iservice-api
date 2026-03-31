@@ -412,3 +412,82 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
     </td>
   </tr>
 </table>
+
+### User Story US07 - Concluir Serviço em Andamento
+
+<table>
+  <tr>
+    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US07</th>
+  </tr>
+  <tr>
+    <td style="width:25%;padding:6px;"><strong>Título</strong></td>
+    <td style="padding:6px;">Finalizar o ciclo de vida de um serviço aceito e em execução.</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Identificação</strong></td>
+    <td style="padding:6px;">US07 - Concluir Serviço</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Story / Descrição</strong></td>
+    <td style="padding:6px;">
+      <strong>Como</strong> <em>Profissional</em>,<br>
+      <strong>Quero</strong> <em>marcar um serviço (Job) como concluído após a prestação</em>,<br>
+      <strong>Para</strong> <em>que o sistema registre a finalização, libere minha agenda e permita que o cliente me avalie.</em>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Regras de Negócio (RN)</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>RN01 - Restrição de Status:</strong> O sistema só permite a conclusão se o Job estiver com o status <code>ACCEPTED</code>.</li>
+        <li><strong>RN02 - Permissão de Execução:</strong> Apenas o Profissional vinculado ao serviço (<code>professional_id</code>) tem autorização para marcar como concluído via token JWT.</li>
+        <li><strong>RN03 - Registro Temporal:</strong> Ao concluir, o sistema deve registrar automaticamente o timestamp na coluna <code>finished_at</code> ou similar.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Mensagens do Sistema</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>MSG01 (Sucesso):</strong> "Serviço finalizado com sucesso."</li>
+        <li><strong>MSG02 (Erro - RN01):</strong> "Não é possível concluir um serviço que não foi previamente aceito."</li>
+        <li><strong>MSG03 (Erro - RN02):</strong> "Você não tem permissão para finalizar este serviço."</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Modelo de Dados Relacionado</strong></td>
+    <td style="padding:6px;">
+      Fragmento da Entidade <code>Job</code> impactada:<br>
+      - <code>id</code> (UUID)<br>
+      - <code>professional_id</code> (UUID)<br>
+      - <code>status</code> (Altera para 'COMPLETED')<br>
+      - <code>updated_at</code> (Timestamp de finalização)
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Testes de Aceitação (TA)</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>TA07.01 - Conclusão pelo Profissional:</strong> <br><em>Dado que</em> o profissional aceitou o Job X (status ACCEPTED), <em>Quando</em> ele clica em concluir, <em>Então</em> o status muda para COMPLETED e a MSG01 é exibida.</li>
+        <li><strong>TA07.02 - Tentativa por outro Usuário:</strong> <br><em>Dado que</em> o usuário logado não é o profissional vinculado ao Job, <em>Quando</em> ele tenta concluir, <em>Então</em> o sistema bloqueia e retorna MSG03.</li>
+        <li><strong>TA07.03 - Fluxo de Status Inválido:</strong> <br><em>Dado que</em> o Job ainda está em SEARCHING, <em>Quando</em> o profissional tenta forçar a conclusão, <em>Então</em> o sistema retorna MSG02.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Estimativa</strong></td>
+    <td style="padding:6px;">6h</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Responsáveis</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>Analista:</strong> Caio Lucas Lopes</li>
+        <li><strong>Desenvolvedor:</strong> Caio Lucas Lopes (Back-end)</li>
+        <li><strong>Revisor:</strong> Kaique</li>
+        <li><strong>Testador:</strong> Eduardo Nascimento Santos</li>
+      </ul>
+    </td>
+  </tr>
+</table>
