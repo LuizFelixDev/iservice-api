@@ -243,8 +243,6 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
   </tr>
 </table>
 
-
-
 ### User Story US04 - Cancelar Solicitação de Serviço
 
 <table>
@@ -498,8 +496,6 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
     </td>
   </tr>
 </table>
-
-
 
 ### User Story US07 - Concluir Serviço em Andamento
 
