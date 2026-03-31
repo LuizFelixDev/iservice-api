@@ -159,38 +159,46 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
 
 <br>
 
-### User Story US06 - Manter Serviço na visão do profissional (Jobs e Matchmaking)
+### User Story US03 - Manter Serviço na visão do cliente (Jobs e Matchmaking)
 
 <table>
   <tr>
-    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US04</th>
+    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">
+      📌 User Story - US03
+    </th>
   </tr>
   <tr>
     <td style="width:25%;padding:6px;"><strong>Título</strong></td>
-    <td style="padding:6px;">Visualização de demandas no radar e aceitação de serviços por geolocalização.</td>
+    <td style="padding:6px;">
+      Criação e acompanhamento de solicitação de serviço com localização via GPS.
+    </td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Identificação</strong></td>
-    <td style="padding:6px;">US04 - Manter Serviço (Visão Profissional)</td>
+    <td style="padding:6px;">US03 - Manter Serviço</td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Story</strong></td>
     <td style="padding:6px;">
-      Como <em>profissional</em>, quero <em>visualizar solicitações de serviços próximas à minha localização no radar</em>, para que eu possa <em>aceitar demandas de trabalho e gerenciar meus serviços em andamento.</em>
+      Como <em>cliente</em>, quero 
+      <em>solicitar um serviço informando minha localização via GPS</em>, 
+      para que eu possa 
+      <em>receber atendimento de um profissional próximo e acompanhar o status da minha solicitação</em>.
     </td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Requisitos Relacionados</strong></td>
-    <td style="padding:6px;">RF04.01, RF04.02, RF04.03</td>
+    <td style="padding:6px;">RF03.01, RF03.02, RF03.04</td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Critérios de Aceitação</strong></td>
     <td style="padding:6px;">
       <ul>
-        <li>O radar deve listar apenas Jobs com status 'SEARCHING' dentro de um raio de distância configurado para o profissional.</li>
-        <li>O profissional deve conseguir visualizar detalhes da demanda (descrição, categoria e distância) antes do aceite.</li>
-        <li>O aceite do Job deve ser atômico, garantindo que apenas o primeiro profissional a clicar receba a demanda.</li>
-        <li>O sistema deve permitir que o profissional visualize sua agenda de serviços aceitos e pendentes.</li>
+        <li>O cliente deve conseguir criar uma solicitação informando descrição e localização (latitude e longitude).</li>
+        <li>A localização deve ser armazenada como um ponto geográfico válido (PostGIS).</li>
+        <li>O cliente deve visualizar a lista de suas solicitações ordenadas por data de criação.</li>
+        <li>O cliente deve conseguir visualizar o status atual da solicitação (SEARCHING, NEGOTIATING, ACCEPTED, COMPLETED, CANCELED).</li>
+        <li>O cliente deve visualizar quando um profissional aceitar sua solicitação.</li>
       </ul>
     </td>
   </tr>
@@ -198,10 +206,11 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
     <td style="padding:6px;"><strong>Testes de Aceitação</strong></td>
     <td style="padding:6px;">
       <ul>
-        <li>TA04.01 - O radar filtra e exibe corretamente os Jobs baseando-se no ponto geográfico (PostGIS) do profissional.</li>
-        <li>TA04.02 - Ao clicar em aceitar, o professional_id é vinculado ao Job e o status é alterado para 'ACCEPTED' com sucesso.</li>
-        <li>TA04.03 - Se dois profissionais tentarem aceitar o mesmo Job simultaneamente, o sistema retorna erro para o segundo solicitante.</li>
-        <li>TA04.04 - O profissional consegue visualizar a lista de solicitações que ele aceitou anteriormente.</li>
+        <li>TA03.01 - Ao criar um Job, latitude e longitude são armazenadas corretamente no banco.</li>
+        <li>TA03.02 - O cliente visualiza apenas suas próprias solicitações.</li>
+        <li>TA03.03 - A lista de solicitações é exibida em ordem decrescente de criação.</li>
+        <li>TA03.04 - O status da solicitação é atualizado corretamente ao longo do fluxo.</li>
+        <li>TA03.05 - O cliente consegue identificar quando um profissional aceitou sua solicitação.</li>
       </ul>
     </td>
   </tr>
@@ -233,6 +242,8 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
     </td>
   </tr>
 </table>
+
+
 
 ### User Story US04 - Cancelar Solicitação de Serviço
 
@@ -408,6 +419,162 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
         <li><strong>Desenvolvedor:</strong> Eduardo Nascimento (Back-end) / Luiz Henrique (Front-end)</li>
         <li><strong>Revisor:</strong> Kaique</li>
         <li><strong>Testador:</strong> Isaque Guimaraes</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+### User Story US06 - Manter Serviço na visão do profissional (Jobs e Matchmaking)
+
+<table>
+  <tr>
+    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US04</th>
+  </tr>
+  <tr>
+    <td style="width:25%;padding:6px;"><strong>Título</strong></td>
+    <td style="padding:6px;">Visualização de demandas no radar e aceitação de serviços por geolocalização.</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Identificação</strong></td>
+    <td style="padding:6px;">US04 - Manter Serviço (Visão Profissional)</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Story</strong></td>
+    <td style="padding:6px;">
+      Como <em>profissional</em>, quero <em>visualizar solicitações de serviços próximas à minha localização no radar</em>, para que eu possa <em>aceitar demandas de trabalho e gerenciar meus serviços em andamento.</em>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Requisitos Relacionados</strong></td>
+    <td style="padding:6px;">RF04.01, RF04.02, RF04.03</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Critérios de Aceitação</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li>O radar deve listar apenas Jobs com status 'SEARCHING' dentro de um raio de distância configurado para o profissional.</li>
+        <li>O profissional deve conseguir visualizar detalhes da demanda (descrição, categoria e distância) antes do aceite.</li>
+        <li>O aceite do Job deve ser atômico, garantindo que apenas o primeiro profissional a clicar receba a demanda.</li>
+        <li>O sistema deve permitir que o profissional visualize sua agenda de serviços aceitos e pendentes.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Testes de Aceitação</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li>TA04.01 - O radar filtra e exibe corretamente os Jobs baseando-se no ponto geográfico (PostGIS) do profissional.</li>
+        <li>TA04.02 - Ao clicar em aceitar, o professional_id é vinculado ao Job e o status é alterado para 'ACCEPTED' com sucesso.</li>
+        <li>TA04.03 - Se dois profissionais tentarem aceitar o mesmo Job simultaneamente, o sistema retorna erro para o segundo solicitante.</li>
+        <li>TA04.04 - O profissional consegue visualizar a lista de solicitações que ele aceitou anteriormente.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Estimativa</strong></td>
+    <td style="padding:6px;">24h</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Tempo Real Gasto</strong></td>
+    <td style="padding:6px;">--</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Tamanho Funcional</strong></td>
+    <td style="padding:6px;">15 PF</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Prioridade</strong></td>
+    <td style="padding:6px;">Essencial (Core)</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Responsáveis</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>Analista:</strong> Caio Lucas Lopes</li>
+        <li><strong>Desenvolvedor:</strong> Kaique (Back-end) e Eduardo Nascimento (Front-end)</li>
+        <li><strong>Revisor:</strong> Ismael Gomes da Silva</li>
+        <li><strong>Testador:</strong> Luiz Henrique</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+
+
+### User Story US07 - Concluir Serviço em Andamento
+
+<table>
+  <tr>
+    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US07</th>
+  </tr>
+  <tr>
+    <td style="width:25%;padding:6px;"><strong>Título</strong></td>
+    <td style="padding:6px;">Finalizar o ciclo de vida de um serviço aceito e em execução.</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Identificação</strong></td>
+    <td style="padding:6px;">US07 - Concluir Serviço</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Story / Descrição</strong></td>
+    <td style="padding:6px;">
+      <strong>Como</strong> <em>Profissional</em>,<br>
+      <strong>Quero</strong> <em>marcar um serviço (Job) como concluído após a prestação</em>,<br>
+      <strong>Para</strong> <em>que o sistema registre a finalização, libere minha agenda e permita que o cliente me avalie.</em>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Regras de Negócio (RN)</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>RN01 - Restrição de Status:</strong> O sistema só permite a conclusão se o Job estiver com o status <code>ACCEPTED</code>.</li>
+        <li><strong>RN02 - Permissão de Execução:</strong> Apenas o Profissional vinculado ao serviço (<code>professional_id</code>) tem autorização para marcar como concluído via token JWT.</li>
+        <li><strong>RN03 - Registro Temporal:</strong> Ao concluir, o sistema deve registrar automaticamente o timestamp na coluna <code>finished_at</code> ou similar.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Mensagens do Sistema</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>MSG01 (Sucesso):</strong> "Serviço finalizado com sucesso."</li>
+        <li><strong>MSG02 (Erro - RN01):</strong> "Não é possível concluir um serviço que não foi previamente aceito."</li>
+        <li><strong>MSG03 (Erro - RN02):</strong> "Você não tem permissão para finalizar este serviço."</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Modelo de Dados Relacionado</strong></td>
+    <td style="padding:6px;">
+      Fragmento da Entidade <code>Job</code> impactada:<br>
+      - <code>id</code> (UUID)<br>
+      - <code>professional_id</code> (UUID)<br>
+      - <code>status</code> (Altera para 'COMPLETED')<br>
+      - <code>updated_at</code> (Timestamp de finalização)
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Testes de Aceitação (TA)</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>TA07.01 - Conclusão pelo Profissional:</strong> <br><em>Dado que</em> o profissional aceitou o Job X (status ACCEPTED), <em>Quando</em> ele clica em concluir, <em>Então</em> o status muda para COMPLETED e a MSG01 é exibida.</li>
+        <li><strong>TA07.02 - Tentativa por outro Usuário:</strong> <br><em>Dado que</em> o usuário logado não é o profissional vinculado ao Job, <em>Quando</em> ele tenta concluir, <em>Então</em> o sistema bloqueia e retorna MSG03.</li>
+        <li><strong>TA07.03 - Fluxo de Status Inválido:</strong> <br><em>Dado que</em> o Job ainda está em SEARCHING, <em>Quando</em> o profissional tenta forçar a conclusão, <em>Então</em> o sistema retorna MSG02.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Estimativa</strong></td>
+    <td style="padding:6px;">6h</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Responsáveis</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>Analista:</strong> Caio Lucas Lopes</li>
+        <li><strong>Desenvolvedor:</strong> Caio Lucas Lopes (Back-end)</li>
+        <li><strong>Revisor:</strong> Kaique</li>
+        <li><strong>Testador:</strong> Eduardo Nascimento Santos</li>
       </ul>
     </td>
   </tr>
