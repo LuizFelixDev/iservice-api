@@ -159,7 +159,7 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
 
 <br>
 
-### User Story US03 - Manter Serviço na visão do profissional (Jobs e Matchmaking)
+### User Story US06 - Manter Serviço na visão do profissional (Jobs e Matchmaking)
 
 <table>
   <tr>
