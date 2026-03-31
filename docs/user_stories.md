@@ -231,3 +231,82 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
     </td>
   </tr>
 </table>
+
+### User Story US04 - Cancelar Solicitação de Serviço
+
+<table>
+  <tr>
+    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US04</th>
+  </tr>
+  <tr>
+    <td style="width:25%;padding:6px;"><strong>Título</strong></td>
+    <td style="padding:6px;">Cancelar Solicitação de Serviço Pendente ou Aceita</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Identificação</strong></td>
+    <td style="padding:6px;">US04 - Cancelar Serviço</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Story / Descrição</strong></td>
+    <td style="padding:6px;">
+      <strong>Como</strong> <em>Cliente ou Profissional</em>,<br>
+      <strong>Quero</strong> <em>poder cancelar um serviço (Job) que ainda não foi concluído</em>,<br>
+      <strong>Para</strong> <em>desistir da solicitação ou informar que não poderei mais comparecer ao local, liberando a demanda.</em>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Regras de Negócio (RN)</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>RN01 - Restrição de Status:</strong> O sistema só permite o cancelamento se o Job estiver com o status <code>SEARCHING</code> ou <code>ACCEPTED</code>. Serviços <code>COMPLETED</code> ou já <code>CANCELED</code> não podem ser alterados.</li>
+        <li><strong>RN02 - Permissão de Propriedade:</strong> Apenas o Cliente que criou o pedido (<code>client_id</code>) ou o Profissional que aceitou (<code>professional_id</code>) têm autorização para cancelar. Qualquer outro ID via token JWT deve ser bloqueado.</li>
+        <li><strong>RN03 - Retorno ao Radar:</strong> Se o cancelamento for feito pelo <em>Profissional</em>, o status do Job não vira <code>CANCELED</code>, ele volta para <code>SEARCHING</code> e o <code>professional_id</code> volta a ser <code>null</code>, para que o Job reapareça no radar de outros prestadores.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Mensagens do Sistema</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>MSG01 (Sucesso):</strong> "Serviço cancelado com sucesso."</li>
+        <li><strong>MSG02 (Erro - RN01):</strong> "Não é possível cancelar um serviço que já foi finalizado."</li>
+        <li><strong>MSG03 (Erro - RN02):</strong> "Você não tem permissão para alterar o status deste serviço."</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Modelo de Dados Relacionado</strong></td>
+    <td style="padding:6px;">
+      Fragmento da Entidade <code>Job</code> impactada:<br>
+      - <code>id</code> (UUID)<br>
+      - <code>client_id</code> (UUID)<br>
+      - <code>professional_id</code> (UUID, Nullable)<br>
+      - <code>status</code> (Altera para 'CANCELED' ou 'SEARCHING')
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Testes de Aceitação (TA)</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>TA04.01 - Cancelamento pelo Cliente:</strong> <br><em>Dado que</em> o cliente é dono do Job X (status ACCEPTED), <em>Quando</em> ele clica em cancelar, <em>Então</em> o status muda para CANCELED e a MSG01 é exibida.</li>
+        <li><strong>TA04.02 - Cancelamento pelo Profissional:</strong> <br><em>Dado que</em> o profissional é dono do Job X, <em>Quando</em> ele clica em cancelar, <em>Então</em> o status volta para SEARCHING e o professional_id fica nulo.</li>
+        <li><strong>TA04.03 - Tentativa Fora do Escopo:</strong> <br><em>Dado que</em> o usuário logado não é o criador nem o profissional do Job, <em>Quando</em> ele tenta enviar a requisição de cancelamento, <em>Então</em> o sistema bloqueia e retorna MSG03.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Estimativa</strong></td>
+    <td style="padding:6px;">8h</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Responsáveis</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>Analista:</strong> Kaique</li>
+        <li><strong>Desenvolvedor:</strong> Kaique (Back-end) / Luiz Henrique (Front-end)</li>
+        <li><strong>Revisor:</strong> Caio Lucas Lopes</li>
+        <li><strong>Testador:</strong> Isaque Guimaraes</li>
+      </ul>
+    </td>
+  </tr>
+</table>
