@@ -159,37 +159,38 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
 
 <br>
 
-### User Story US03 - Manter Serviço (Jobs e Matchmaking)
+### User Story US03 - Manter Serviço na visão do profissional (Jobs e Matchmaking)
 
 <table>
   <tr>
-    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US03</th>
+    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US04</th>
   </tr>
   <tr>
     <td style="width:25%;padding:6px;"><strong>Título</strong></td>
-    <td style="padding:6px;">Fluxo de criação de demanda com GPS, exibição no radar e aceite (Match).</td>
+    <td style="padding:6px;">Visualização de demandas no radar e aceitação de serviços por geolocalização.</td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Identificação</strong></td>
-    <td style="padding:6px;">US03 - Manter Serviço</td>
+    <td style="padding:6px;">US04 - Manter Serviço (Visão Profissional)</td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Story</strong></td>
     <td style="padding:6px;">
-      Como <em>cliente</em>, quero <em>solicitar um serviço compartilhando meu GPS</em>, e como <em>profissional</em>, quero <em>ver demandas no meu radar para aceitá-las</em>.
+      Como <em>profissional</em>, quero <em>visualizar solicitações de serviços próximas à minha localização no radar</em>, para que eu possa <em>aceitar demandas de trabalho e gerenciar meus serviços em andamento.</em>
     </td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Requisitos Relacionados</strong></td>
-    <td style="padding:6px;">RF03.01, RF03.02, RF03.03, RF03.04</td>
+    <td style="padding:6px;">RF04.01, RF04.02, RF04.03</td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Critérios de Aceitação</strong></td>
     <td style="padding:6px;">
       <ul>
-        <li>A criação do Job deve obrigatoriamente registrar um ponto geográfico (PostGIS).</li>
-        <li>O Radar deve listar apenas Jobs com status 'SEARCHING' dentro de um raio de distância válido.</li>
-        <li>O aceite do Job por um profissional deve ser atômico (evitar que dois aceitem ao mesmo tempo).</li>
+        <li>O radar deve listar apenas Jobs com status 'SEARCHING' dentro de um raio de distância configurado para o profissional.</li>
+        <li>O profissional deve conseguir visualizar detalhes da demanda (descrição, categoria e distância) antes do aceite.</li>
+        <li>O aceite do Job deve ser atômico, garantindo que apenas o primeiro profissional a clicar receba a demanda.</li>
+        <li>O sistema deve permitir que o profissional visualize sua agenda de serviços aceitos e pendentes.</li>
       </ul>
     </td>
   </tr>
@@ -197,9 +198,10 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
     <td style="padding:6px;"><strong>Testes de Aceitação</strong></td>
     <td style="padding:6px;">
       <ul>
-        <li>TA03.01 - Criação de Job salva latitude e longitude corretamente no banco.</li>
-        <li>TA03.02 - Profissional visualiza no feed apenas Jobs próximos à sua localização atual.</li>
-        <li>TA03.03 - Ao aceitar um Job, o status muda para ACCEPTED e o professional_id é vinculado.</li>
+        <li>TA04.01 - O radar filtra e exibe corretamente os Jobs baseando-se no ponto geográfico (PostGIS) do profissional.</li>
+        <li>TA04.02 - Ao clicar em aceitar, o professional_id é vinculado ao Job e o status é alterado para 'ACCEPTED' com sucesso.</li>
+        <li>TA04.03 - Se dois profissionais tentarem aceitar o mesmo Job simultaneamente, o sistema retorna erro para o segundo solicitante.</li>
+        <li>TA04.04 - O profissional consegue visualizar a lista de solicitações que ele aceitou anteriormente.</li>
       </ul>
     </td>
   </tr>
