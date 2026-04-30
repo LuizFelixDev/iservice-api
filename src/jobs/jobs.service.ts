@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateJobDto } from './dto/create-job.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Job } from './entities/job.entity';
+import { Job, JobStatus } from './entities/job.entity';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
@@ -42,5 +42,20 @@ export class JobsService {
         createdAt: 'DESC',
       },
     });
+  }
+
+  async findNearbyJobs(latitude: number, longitude: number, radiusInMeters: number) {
+    return this.jobRepository
+      .createQueryBuilder('job')
+      .where('job.status = :status', { status: JobStatus.SEARCHING })
+      .andWhere(
+        'ST_DWithin(job.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, :radius)',
+        {
+          longitude,
+          latitude,
+          radius: radiusInMeters,
+        },
+      )
+      .getMany();
   }
 }

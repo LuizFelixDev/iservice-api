@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Query} from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -22,5 +22,14 @@ export class JobsController {
   @Get('my-jobs')
   findMyJobs(@Req() req: AuthRequest) {
     return this.jobsService.findByClient(req.user.id);
+  }
+
+  @Get('radar')
+  async findRadar(
+    @Query('latitude') lat: number,
+    @Query('longitude') lng: number,
+    @Query('radius') radius: number,
+  ) {
+    return this.jobsService.findNearbyJobs(lat, lng, radius);
   }
 }
