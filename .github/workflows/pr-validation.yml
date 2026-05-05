@@ -25,5 +25,8 @@ jobs:
       - name: Verificar padrões (Lint)
         run: npm run lint
 
+      - name: Executar Testes Unitários
+        run: npm run test
+
       - name: Verificar compilação (Build)
         run: npm run build
