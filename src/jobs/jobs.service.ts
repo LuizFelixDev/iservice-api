@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { CreateJobDto } from './dto/create-job.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Job } from './entities/job.entity';
+import { Job, JobStatus } from './entities/job.entity';
 import { UsersService } from 'src/users/users.service';
+import { CreateJobDto } from './dto/create-job.dto';
 
 @Injectable()
 export class JobsService {
+  private readonly DEFAULT_SEARCH_RADIUS_METERS = 10000;
+
   constructor(
     @InjectRepository(Job)
     private jobRepository: Repository<Job>,
@@ -18,12 +20,10 @@ export class JobsService {
 
     const job = this.jobRepository.create({
       description: createJobDto.description,
-
       location: {
         type: 'Point',
         coordinates: [createJobDto.longitude, createJobDto.latitude],
       },
-
       client: user,
     });
 
@@ -32,15 +32,34 @@ export class JobsService {
 
   async findByClient(userId: number) {
     return this.jobRepository.find({
-      where: {
-        client: {
-          id: userId,
-        },
-      },
+      where: { client: { id: userId } },
       relations: ['client', 'professional'],
-      order: {
-        createdAt: 'DESC',
-      },
+      order: { createdAt: 'DESC' },
     });
+  }
+
+  async findNearbyJobs(
+    latitude: number,
+    longitude: number,
+    radius?: string | number,
+  ) {
+    const radiusInMeters = radius
+      ? Number(radius)
+      : this.DEFAULT_SEARCH_RADIUS_METERS;
+
+    return this.jobRepository
+      .createQueryBuilder('job')
+      .leftJoinAndSelect('job.client', 'client')
+      .where('job.status = :status', { status: JobStatus.SEARCHING })
+      .andWhere(
+        'ST_DWithin(job.location, ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography, :radius)',
+        {
+          longitude,
+          latitude,
+          radius: radiusInMeters,
+        },
+      )
+      .orderBy('job.createdAt', 'DESC')
+      .getMany();
   }
 }

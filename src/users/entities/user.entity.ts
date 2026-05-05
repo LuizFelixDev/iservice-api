@@ -9,7 +9,7 @@ import {
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Role } from '../../roles/entities/role.entity';
 import { Profile } from './profile.entity';
-import { Job } from 'src/jobs/entities/job.entity';
+import { Job } from '../../jobs/entities/job.entity';
 
 export enum Provider {
   LOCAL = 'local',
