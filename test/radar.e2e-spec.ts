@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { JwtService } from '@nestjs/jwt';
+import { describe, beforeAll, it, expect, afterAll } from '@jest/globals';
 
 describe('Radar (e2e)', () => {
   let app: INestApplication;
