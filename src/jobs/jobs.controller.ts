@@ -1,16 +1,28 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Query} from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Req,
+  Query,
+} from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { RoleName } from 'src/roles/enums/role.enum';
 
 interface AuthRequest extends Request {
   user: {
     id: number;
+    roles: string[];
   };
 }
 
 @Controller('jobs')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
@@ -25,11 +37,16 @@ export class JobsController {
   }
 
   @Get('radar')
+  @Roles(RoleName.PROFESSIONAL)
   async findRadar(
-    @Query('latitude') lat: number,
-    @Query('longitude') lng: number,
-    @Query('radius') radius: number,
+    @Query('latitude') lat: string,
+    @Query('longitude') lng: string,
+    @Query('radius') radius?: string,
   ) {
-    return this.jobsService.findNearbyJobs(lat, lng, radius);
+    return this.jobsService.findNearbyJobs(
+      parseFloat(lat),
+      parseFloat(lng),
+      radius,
+    );
   }
 }
