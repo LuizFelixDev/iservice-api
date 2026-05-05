@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, ManyToOne } from 'typeorm';
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { User } from 'src/users/entities/user.entity';
 
@@ -11,6 +11,7 @@ export enum JobStatus {
 }
 
 @Entity('jobs')
+@Index(['location'], { spatial: true })
 export class Job extends BaseEntity {
   @Column({ type: 'text' })
   description: string;
