@@ -5,7 +5,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 interface AuthRequest extends Request {
   user: {
-    id: number;
+    id: string;
   };
 }
 
