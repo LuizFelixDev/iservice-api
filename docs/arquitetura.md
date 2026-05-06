@@ -11,15 +11,14 @@ O sistema iService segue uma arquitetura baseada em camadas cliente-servidor, on
 
 Abaixo, apresentamos o diagrama estrutural detalhado das camadas do sistema, fluxo de dados e serviços externos:
 
-```mermaid
+~~~mermaid
 flowchart TD
-    %% Definição de Cores e Estilos
     classDef frontend fill:#e3f2fd,stroke:#1e88e5,stroke-width:2px,color:#000
     classDef backend fill:#ffebee,stroke:#e53935,stroke-width:2px,color:#000
     classDef database fill:#e8f5e9,stroke:#43a047,stroke-width:2px,color:#000
     classDef external fill:#fff3e0,stroke:#fb8c00,stroke-width:2px,color:#000
 
-    subgraph Cliente ["📲 Camada de Apresentação (Frontend Mobile)"]
+    subgraph Cliente ["Camada de Apresentação (Frontend Mobile)"]
         UI["Interface e Componentes\n(React Native / NativeBase)"]
         GPS["Módulo Nativo de Localização\n(Expo Location)"]
         ClientAPI["Integração de Rede\n(Axios / Fetch)"]
@@ -28,9 +27,9 @@ flowchart TD
         UI --> ClientAPI
     end
 
-    subgraph Servidor ["⚙️ Camada de Aplicação (NestJS Backend)"]
+    subgraph Servidor ["Camada de Aplicação (NestJS Backend)"]
         Controllers["Controllers REST\n(Endpoints e Roteamento)"]
-        Guards["Segurança & Auth\n(Guards JWT / Estratégias)"]
+        Guards["Segurança e Auth\n(Guards JWT / Estratégias)"]
         Services["Serviços de Negócio\n(Matchmaking, Radar, Users)"]
         ORM["Camada de Persistência\n(TypeORM)"]
 
@@ -39,28 +38,26 @@ flowchart TD
         Services --> ORM
     end
 
-    subgraph Persistencia ["🗄️ Camada de Dados (Container Docker)"]
+    subgraph Persistencia ["Camada de Dados (Container Docker)"]
         Postgres[("PostgreSQL\n(Banco de Dados Relacional)")]
         PostGIS{{"PostGIS\n(Motor de Inteligência Espacial)"}}
 
         Postgres --- PostGIS
     end
 
-    subgraph Externo ["🌐 Serviços e APIs Externas"]
+    subgraph Externo ["Serviços e APIs Externas"]
         Google["Google OAuth 2.0\n(Provedor de Identidade)"]
     end
 
-    %% Relacionamentos Principais (Comunicação entre camadas)
     ClientAPI == "HTTP/JSON\n(Requisições API)" ==> Controllers
     Guards -. "Valida Autenticação Social" .-> Google
     ORM == "TCP/IP\n(Queries SQL/Espaciais)" ==> Postgres
 
-    %% Aplicação das classes de estilo
     class UI,GPS,ClientAPI frontend;
     class Controllers,Guards,Services,ORM backend;
     class Postgres,PostGIS database;
     class Google external;
-```
+~~~
 
 ---
 
@@ -87,4 +84,28 @@ A implantação e execução local do sistema é orquestrada via **Docker Compos
 1. **Container de Banco de Dados:** Levanta uma imagem oficial do PostgreSQL já com a extensão PostGIS instalada, mapeando as portas padrão e configurando volumes para que os dados não sejam perdidos ao desligar a máquina.
 2. **Container da Aplicação (Opcional p/ Dev):** A API NestJS pode ser executada via Docker ou diretamente no host (`npm run start:dev`) conectando-se ao container do banco de dados exposto.
 
-Essa abordagem elimina a necessidade de configurações complexas de banco de dados na máquina física de cada desenvolvedor, permitindo que o ambiente completo seja instanciado com apenas um comando (`docker-compose up -d`).
+---
+
+## 4. Descrição Detalhada dos Componentes
+
+A arquitetura do iService foi decomposta metodologicamente para garantir a Separação de Conceitos (Separation of Concerns - SoC), facilitando testes, manutenibilidade e escalabilidade.
+
+### 4.1. Componente Frontend (Apresentação / Mobile)
+* **Responsabilidade:** Atuar como a interface primária de interação humana, capturando intenções do usuário (solicitar serviço, aceitar, cancelar) e renderizando as respostas de forma intuitiva.
+* **Módulo de Geolocalização:** Utiliza a biblioteca `expo-location` para solicitar permissões nativas ao Sistema Operacional (Android/iOS) e extrair a Latitude e Longitude exatas do dispositivo no momento de criar uma demanda ou abrir o radar.
+* **Comunicação:** O gerenciamento de requisições HTTP é feito de forma assíncrona. Os tokens JWT de autenticação são mantidos em armazenamento seguro no aparelho e anexados no cabeçalho (Header `Authorization: Bearer`) de todas as chamadas para o Backend.
+
+### 4.2. Componente Backend (Lógica de Negócios e API REST)
+* **Responsabilidade:** Receber, validar, processar e responder às requisições do Frontend, garantindo que as regras de negócio sejam estritamente aplicadas.
+* **Estrutura Interna (Padrão NestJS):**
+  * **Controllers:** Portas de entrada da API. Recebem o payload JSON e delegam a ação. Exemplo: `JobsController` recebe as coordenadas em formato texto.
+  * **Guards & Decorators:** Interceptadores de segurança. O `JwtAuthGuard` barra tentativas de acesso sem token válido, enquanto o `RolesGuard` assegura que apenas usuários com a role `PROFESSIONAL` possam acessar a rota de radar.
+  * **Services:** O núcleo das regras de negócio. O `JobsService`, por exemplo, converte as strings de coordenadas em tipos espaciais precisos e gerencia o matchmaking.
+
+### 4.3. Componente Banco de Dados (Persistência e Motor Espacial)
+* **Responsabilidade:** Armazenar os dados de forma persistente, relacional e realizar cálculos matemáticos de distância geográfica em tempo real.
+* **PostgreSQL + TypeORM:** O banco armazena entidades como `Users`, `Profiles`, `Jobs` e `Ratings`. O TypeORM faz o mapeamento objeto-relacional, eliminando a necessidade de queries SQL manuais para operações de CRUD.
+* **O Motor PostGIS:** É a peça-chave do projeto. Em vez do Backend calcular a distância via código matemático, o banco utiliza o tipo espacial `GEOMETRY(Point)`. Isso permite o uso da função `ST_DWithin`, processando o raio do radar diretamente na memória do banco de dados com índices em árvore (GIST).
+
+### 4.4. Integrações e Serviços Externos
+* **Google OAuth 2.0:** Componente acoplado ao módulo de autenticação. É utilizado para acelerar a entrada de novos usuários (Single Sign-On). O Backend valida tokens do Google via biblioteca `google-auth-library` antes de emitir o JWT interno da plataforma iService.
