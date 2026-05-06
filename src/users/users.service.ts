@@ -90,7 +90,7 @@ export class UsersService {
     return null;
   }
 
-  async findById(id: number): Promise<User> {
+  async findById(id: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: ['roles', 'profile'],
@@ -100,7 +100,7 @@ export class UsersService {
     return user;
   }
 
-  async updateProfile(userId: number, dto: UpdateProfileDto) {
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['profile', 'roles'],
@@ -143,7 +143,7 @@ export class UsersService {
     return UserResponseDto.fromEntity(user);
   }
 
-  async findMe(id: number): Promise<UserResponseDto> {
+  async findMe(id: string): Promise<UserResponseDto> {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: ['roles', 'profile'],
