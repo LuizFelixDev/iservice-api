@@ -175,7 +175,7 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Identificação</strong></td>
-    <td style="padding:6px;">US03 - Manter Serviço</td>
+    <td style="padding:6px;">US04 - Manter Serviço (Visão Profissional)</td>
   </tr>
   <tr>
     <td style="padding:6px;"><strong>Story</strong></td>
