@@ -15,7 +15,7 @@ export class JobsService {
     private userRepository: UsersService,
   ) {}
 
-  async create(createJobDto: CreateJobDto, userId: number) {
+  async create(createJobDto: CreateJobDto, userId: string) {
     const user = await this.userRepository.findById(userId);
 
     const job = this.jobRepository.create({
@@ -30,7 +30,7 @@ export class JobsService {
     return this.jobRepository.save(job);
   }
 
-  async findByClient(userId: number) {
+  async findByClient(userId: string) {
     return this.jobRepository.find({
       where: { client: { id: userId } },
       relations: ['client', 'professional'],
