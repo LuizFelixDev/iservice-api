@@ -3,33 +3,45 @@ import { JobsService } from './jobs.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Job } from './entities/job.entity';
 import { UsersService } from 'src/users/users.service';
+import { CreateJobDto } from './dto/create-job.dto';
 
 describe('JobsService', () => {
   let service: JobsService;
-  let jobRepositoryMock: any;
-  let usersServiceMock: any;
+
+  const mockQueryBuilder = {
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    getMany: jest
+      .fn()
+      .mockResolvedValue([{ id: "1", description: 'Serviço Radar' }]),
+  };
+
+  const mockJobRepository = {
+    create: jest.fn(),
+    save: jest.fn(),
+    find: jest.fn(),
+    createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
+  };
+
+  const mockUsersService = {
+    findById: jest.fn(),
+  };
 
   beforeEach(async () => {
-    jobRepositoryMock = {
-      create: jest.fn(),
-      save: jest.fn(),
-      find: jest.fn(),
-    };
-
-    usersServiceMock = {
-      findById: jest.fn(),
-    };
+    jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         JobsService,
         {
           provide: getRepositoryToken(Job),
-          useValue: jobRepositoryMock,
+          useValue: mockJobRepository,
         },
         {
           provide: UsersService,
-          useValue: usersServiceMock,
+          useValue: mockUsersService,
         },
       ],
     }).compile();
@@ -37,35 +49,124 @@ describe('JobsService', () => {
     service = module.get<JobsService>(JobsService);
   });
 
-  it('deve estar definido', () => {
-    expect(service).toBeDefined();
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Inicialização', () => {
+    it('deve estar definido', () => {
+      expect(service).toBeDefined();
+    });
   });
 
   describe('create', () => {
-    it('deve criar um novo job com sucesso usando UUID #37', async () => {
-      const mockDto = { description: 'Teste', longitude: 0, latitude: 0 };
-      const mockUserId = 'uuid-v4-string';
-      const mockUser = { id: mockUserId, name: 'Mestre Ismael' };
+    it('deve formatar as coordenadas em GeoJSON Point e salvar o serviço', async () => {
+      const createJobDto: CreateJobDto = {
+        description: 'Vazamento na pia',
+        latitude: -6.4585,
+        longitude: -37.0944,
+      };
 
-      usersServiceMock.findById.mockResolvedValue(mockUser);
-      jobRepositoryMock.create.mockReturnValue({ ...mockDto, client: mockUser });
-      jobRepositoryMock.save.mockResolvedValue({ id: 'job-id', ...mockDto });
+      const mockUser = { id: "1", name: 'João Cliente' };
+      const mockJobCreated = {
+        description: createJobDto.description,
+        client: mockUser,
+      };
 
-      const result = await service.create(mockDto as any, mockUserId);
+      mockUsersService.findById.mockResolvedValue(mockUser);
+      mockJobRepository.create.mockReturnValue(mockJobCreated);
+      mockJobRepository.save.mockResolvedValue({ id: "10", ...mockJobCreated });
 
-      expect(usersServiceMock.findById).toHaveBeenCalledWith(mockUserId);
-      expect(result).toHaveProperty('id');
+      const result = await service.create(createJobDto, "1");
+
+      expect(mockUsersService.findById).toHaveBeenCalledWith("1");
+      expect(mockJobRepository.create).toHaveBeenCalledWith({
+        description: 'Vazamento na pia',
+        location: {
+          type: 'Point',
+          coordinates: [-37.0944, -6.4585],
+        },
+        client: mockUser,
+      });
+      expect(mockJobRepository.save).toHaveBeenCalledWith(mockJobCreated);
+      expect(result).toHaveProperty('id', "10");
     });
   });
 
   describe('findByClient', () => {
+    it('deve retornar os serviços solicitados por um cliente específico', async () => {
+      const mockJobs = [{ id: "1", description: 'Limpeza de calha' }];
+      mockJobRepository.find.mockResolvedValue(mockJobs);
+
+      const result = await service.findByClient("1");
+
+      expect(mockJobRepository.find).toHaveBeenCalledWith({
+        where: { client: { id: "1" } },
+        relations: ['client', 'professional'],
+        order: { createdAt: 'DESC' },
+      });
+      expect(result).toEqual(mockJobs);
+    });
+  });
+
+  describe('findNearbyJobs', () => {
+    it('deve usar o raio padrão de 10000 metros quando nenhum raio é fornecido', async () => {
+      const result = await service.findNearbyJobs(-6.4585, -37.0944);
+
+      expect(mockJobRepository.createQueryBuilder).toHaveBeenCalledWith('job');
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          latitude: -6.4585,
+          longitude: -37.0944,
+          radius: 10000,
+        }),
+      );
+      expect(mockQueryBuilder.orderBy).toHaveBeenCalledWith(
+        'job.createdAt',
+        'DESC',
+      );
+      expect(mockQueryBuilder.getMany).toHaveBeenCalled();
+      expect(result).toEqual([{ id: "1", description: 'Serviço Radar' }]); 
+    });
+
+    it('deve converter e usar o raio fornecido (ex: 5000 metros)', async () => {
+      await service.findNearbyJobs(-6.4585, -37.0944, '5000');
+
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          radius: 5000,
+        }),
+      );
+    });
+  });
+
+  describe('create - refactor UUID', () => {
+    it('deve criar um novo job com sucesso usando UUID #37', async () => {
+      const mockDto = { description: 'Teste', longitude: 0, latitude: 0 };
+      const mockUserId = 'uuid-v4-string';
+      const mockUser = { id: mockUserId, name: 'Ismael' };
+
+      mockUsersService.findById.mockResolvedValue(mockUser);
+      mockJobRepository.create.mockReturnValue({ ...mockDto, client: mockUser });
+      mockJobRepository.save.mockResolvedValue({ id: 'job-id', ...mockDto });
+
+      const result = await service.create(mockDto as any, mockUserId);
+
+      expect(mockUsersService.findById).toHaveBeenCalledWith(mockUserId);
+      expect(result).toHaveProperty('id');
+    });
+  });
+
+  describe('findByClient - refactor UUID', () => {
     it('deve retornar lista de jobs de um cliente usando UUID #37', async () => {
       const mockUserId = 'uuid-v4-string';
-      jobRepositoryMock.find.mockResolvedValue([{ id: 'job-1' }, { id: 'job-2' }]);
+      mockJobRepository.find.mockResolvedValue([{ id: 'job-1' }, { id: 'job-2' }]);
 
       const result = await service.findByClient(mockUserId);
 
-      expect(jobRepositoryMock.find).toHaveBeenCalled();
+      expect(mockJobRepository.find).toHaveBeenCalled();
       expect(Array.isArray(result)).toBe(true);
     });
   });
