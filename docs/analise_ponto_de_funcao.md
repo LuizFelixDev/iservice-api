@@ -28,6 +28,28 @@ A contagem de Pontos de Função Não Ajustados (PFNA) do sistema iService foi r
 
 ---
 
+### US03 - Manter Serviço na visão do cliente (Jobs e Matchmaking)
+
+**Funções de Dados:**
+* **Entidade Job (ALI):** Armazena ID, Descrição, Status, Localização (PostGIS), ID do Cliente, ID do Profissional e Timestamps. (1 TR, 7 TD) -> Complexidade Baixa.
+
+**Funções Transacionais:**
+* **Criar Job (EE):** Insere dados no ALI Job. Referencia 1 arquivo (ALI), 4 campos do payload/token. (1 AR, 4 TD) -> Complexidade Baixa.
+* **Listar Jobs do Cliente (CE):** Consulta o ALI Job filtrando pelo cliente logado. (1 AR, 4 TD) -> Complexidade Baixa.
+* **Visualizar Status da Solicitação (SE):** Consulta de alteração de estado em tempo de execução para o cliente. (1 AR) -> Complexidade Baixa.
+
+**Tabela de Contagem - US03:**
+
+| Componente Funcional | Tipo | Complexidade | TDs | AR/TR | Pontos de Função (PF) |
+| --- | --- | --- | --- | --- | --- |
+| Armazenamento: Tabela Jobs | ALI | Baixa | 7 | 1 | 7 PF |
+| Transação: Criar Job | EE | Baixa | 4 | 1 | 3 PF |
+| Transação: Listar Jobs do Cliente | CE | Baixa | 4 | 1 | 3 PF |
+| Transação: Visualizar Status | SE | Baixa | - | 1 | 2 PF |
+| **Total da US03** | | | | | **15 PF** |
+
+---
+
 ## 2. Como Contribuir para a Contagem Total do Sistema
 
 Para realizar a contagem das próximas User Stories (como o Radar de Jobs e Avaliação), a equipe deve seguir este mesmo padrão:
