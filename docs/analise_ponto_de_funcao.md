@@ -132,6 +132,40 @@ Para realizar a contagem das próximas User Stories (como o Radar de Jobs e Aval
 
 | Funcionalidade / Entidade | Pontos de Função (PF) | Status |
 | --- | --- | --- |
+| Entidades de Dados (ALIs e AIEs do Sistema) | 12 PF (Users, Google) | Em evolução |
+| US01 - Manter Usuário | 10 PF (Apenas transações) | Contabilizado |
+| US02 - Manter Perfil | (a definir) | Pendente |
+| US03 - Solicitar Serviço | (a definir) | Pendente |
+| **Total Não Ajustado (PFNA)** | **22 PF** | |
+
+
+
+## Contagem de Pontos de Função - US05 (Detalhamento)
+
+| Identificação | Funcionalidade (Processo Elementar) | Tipo | ALR | DER | Complexidade | PF |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| US05 | Avaliar Serviço Concluído (Criar Rating) | EE | 2 | 5 | Média | 4 |
+
+### Justificativa da Complexidade (Matriz IFPUG)
+
+A funcionalidade foi classificada como **Entrada Externa (EE)** pois processa dados vindos do usuário (Cliente) para atualizar um arquivo lógico interno do sistema (Entidade Rating). 
+
+A complexidade é **Média (4 PF)** baseada na seguinte contagem:
+
+**1. Arquivos Lógicos Referenciados (ALR) = 2**
+O sistema interage com duas entidades distintas durante a transação:
+* `Job` (Leitura): Consulta para validar se o status é `COMPLETED` (Regra de Negócio RN01).
+* `Rating` (Gravação/Leitura): Consulta para garantir que não há avaliação duplicada (RN02) e posterior gravação do novo registro.
+
+**2. Tipos de Dados (DER) = 5**
+Elementos únicos que atravessam a fronteira da aplicação:
+* `job_id` (Identificador do serviço)
+* `professional_id` (Identificador do profissional)
+* `rating` (Nota de 1 a 5)
+* `comment` (Texto opcional)
+* `Mensagem de Retorno` (Aviso de sucesso ou os erros das RNs)
+
+*De acordo com a tabela padrão do IFPUG para Entradas Externas, uma transação com 2 ALRs e entre 5 a 15 DERs resulta em uma complexidade Média.*
 | Entidades de Dados (ALIs e AIEs do Sistema) | 19 PF (Users, Google, Jobs) | Em evolução |
 | US01 - Manter Usuário | 10 PF (Apenas transações) | Contabilizado |
 | US02 - Manter Perfil | (a definir) | Pendente |
