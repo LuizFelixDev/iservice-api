@@ -28,6 +28,73 @@ A contagem de Pontos de Função Não Ajustados (PFNA) do sistema iService foi r
 
 ---
 
+### US02 - Manter Perfil (Role e Contato)
+
+| Identificação | Funcionalidade (Processo Elementar) | Tipo | ALR | DER | Complexidade | PF |
+|--------------|--------------------------------------|------|-----|-----|--------------|----|
+| US02 | Manter Perfil (Atualização de dados + Role) | EE | 2 | 6 | Média | 4 |
+
+
+
+**Justificativa da Complexidade (Matriz IFPUG)**
+
+A funcionalidade foi classificada como **Entrada Externa (EE)** pois processa dados enviados pelo usuário autenticado para atualizar informações do perfil e modificar seu tipo de conta (role), impactando diretamente regras de permissão do sistema.
+
+A complexidade foi classificada como **Média (4 PF)** com base nos seguintes critérios:
+
+
+
+**Arquivos Lógicos Referenciados (ALR) = 2**
+
+O sistema interage com dois arquivos lógicos durante a transação:
+
+- **User (Leitura e Atualização):**  
+  Responsável pelo armazenamento dos dados do perfil do usuário, incluindo biografia, telefone e role.
+
+- **Permissions/Auth (Leitura lógica):**  
+  Utilizado para refletir a mudança de role e atualizar as permissões de acesso do usuário no sistema.
+
+
+
+**Tipos de Dados (DER) = 6**
+
+Os seguintes elementos de dados atravessam a fronteira da aplicação:
+
+- `user_id` (identificador do usuário autenticado)
+- `biography` (biografia do perfil)
+- `phone` (telefone de contato)
+- `role` (USER / PROFESSIONAL)
+- `status da operação` (sucesso ou erro da atualização)
+- `mensagem do sistema` (feedback retornado ao usuário)
+
+
+
+**Classificação IFPUG**
+
+De acordo com a tabela padrão do IFPUG para **Entradas Externas (EE)**:
+
+- 2 ALR  
+- 4 a 15 DER  
+
+Resultado: **Complexidade Média**
+
+
+
+**Contribuição para o Sistema**
+
+| Entidades de Dados (ALIs e AIEs do Sistema) | PF | Status |
+|---------------------------------------------|----|--------|
+| Users / Profile / Auth                      | 37 PF | Em evolução |
+| US01 - Manter Usuário                       | 10 PF | Contabilizado |
+| US02 - Manter Perfil                        | 4 PF | Em análise |
+| US03 - Manter Serviço                       | 8 PF | Contabilizado |
+
+
+
+**Total Parcial Atualizado**
+
+- **Pontos de Função (parcial): 42 PF**
+
 ### US03 - Manter Serviço na visão do cliente (Jobs e Matchmaking)
 
 **Funções de Dados:**
