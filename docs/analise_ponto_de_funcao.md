@@ -4,6 +4,30 @@ A contagem de Pontos de Função Não Ajustados (PFNA) do sistema iService foi r
 
 ## 1. Detalhamento por User Story
 
+### US01 - Manter Usuário e Autenticação (Login Local + SSO Google)
+
+**Funções de Dados:**
+* **Usuário Local (ALI):** Armazena ID, E-mail, Senha, Data de Criação. (1 TR, 4 TD) -> Complexidade Baixa.
+* **Perfil Externo Google (AIE):** Leitura de dados providos pelo OAuth do Google contendo E-mail, Nome, Foto, Token. (1 TR, 4 TD) -> Complexidade Baixa.
+
+**Funções Transacionais:**
+* **Cadastrar Usuário Local (EE):** Insere dados no ALI Usuário. Referencia 1 arquivo (ALI), 2 campos (E-mail, Senha). (1 AR, 2 TD) -> Complexidade Baixa.
+* **Autenticar via Google (EE):** Lê o AIE do Google e insere/atualiza os ALIs de Usuário e Perfil simultaneamente. (3 AR, 4 TD) -> Complexidade Média.
+* **Fazer Login Local (CE):** Consulta o ALI Usuário para validar a senha, sem alterar dados. (1 AR, 2 TD) -> Complexidade Baixa.
+
+**Tabela de Contagem - US01:**
+
+| Componente Funcional | Tipo | Complexidade | TDs | AR/TR | Pontos de Função (PF) |
+| --- | --- | --- | --- | --- | --- |
+| Armazenamento: Tabela Users | ALI | Baixa | 4 | 1 | 7 PF |
+| Armazenamento: Dados API Google | AIE | Baixa | 4 | 1 | 5 PF |
+| Transação: Cadastrar via E-mail | EE | Baixa | 2 | 1 | 3 PF |
+| Transação: Cadastrar/Login via Google | EE | Média | 4 | 3 | 4 PF |
+| Transação: Login via E-mail | CE | Baixa | 2 | 1 | 3 PF |
+| **Total da US01** | | | | | **22 PF** |
+
+---
+
 ### US03 - Manter Serviço na visão do cliente (Jobs e Matchmaking)
 
 **Funções de Dados:**
