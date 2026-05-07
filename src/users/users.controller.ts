@@ -6,7 +6,7 @@ import { UserResponseDto } from './dto/user-response.dto';
 
 interface RequestWithUser {
   user: {
-    id: number;
+    id: string;
     email: string;
   };
 }

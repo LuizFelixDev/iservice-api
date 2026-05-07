@@ -15,7 +15,7 @@ describe('JobsService', () => {
     orderBy: jest.fn().mockReturnThis(),
     getMany: jest
       .fn()
-      .mockResolvedValue([{ id: 1, description: 'Serviço Radar' }]),
+      .mockResolvedValue([{ id: "1", description: 'Serviço Radar' }]),
   };
 
   const mockJobRepository = {
@@ -30,6 +30,8 @@ describe('JobsService', () => {
   };
 
   beforeEach(async () => {
+    jest.clearAllMocks();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         JobsService,
@@ -65,7 +67,7 @@ describe('JobsService', () => {
         longitude: -37.0944,
       };
 
-      const mockUser = { id: 1, name: 'João Cliente' };
+      const mockUser = { id: "1", name: 'João Cliente' };
       const mockJobCreated = {
         description: createJobDto.description,
         client: mockUser,
@@ -73,11 +75,11 @@ describe('JobsService', () => {
 
       mockUsersService.findById.mockResolvedValue(mockUser);
       mockJobRepository.create.mockReturnValue(mockJobCreated);
-      mockJobRepository.save.mockResolvedValue({ id: 10, ...mockJobCreated });
+      mockJobRepository.save.mockResolvedValue({ id: "10", ...mockJobCreated });
 
-      const result = await service.create(createJobDto, 1);
+      const result = await service.create(createJobDto, "1");
 
-      expect(mockUsersService.findById).toHaveBeenCalledWith(1);
+      expect(mockUsersService.findById).toHaveBeenCalledWith("1");
       expect(mockJobRepository.create).toHaveBeenCalledWith({
         description: 'Vazamento na pia',
         location: {
@@ -87,19 +89,19 @@ describe('JobsService', () => {
         client: mockUser,
       });
       expect(mockJobRepository.save).toHaveBeenCalledWith(mockJobCreated);
-      expect(result).toHaveProperty('id', 10);
+      expect(result).toHaveProperty('id', "10");
     });
   });
 
   describe('findByClient', () => {
     it('deve retornar os serviços solicitados por um cliente específico', async () => {
-      const mockJobs = [{ id: 1, description: 'Limpeza de calha' }];
+      const mockJobs = [{ id: "1", description: 'Limpeza de calha' }];
       mockJobRepository.find.mockResolvedValue(mockJobs);
 
-      const result = await service.findByClient(1);
+      const result = await service.findByClient("1");
 
       expect(mockJobRepository.find).toHaveBeenCalledWith({
-        where: { client: { id: 1 } },
+        where: { client: { id: "1" } },
         relations: ['client', 'professional'],
         order: { createdAt: 'DESC' },
       });
@@ -125,7 +127,7 @@ describe('JobsService', () => {
         'DESC',
       );
       expect(mockQueryBuilder.getMany).toHaveBeenCalled();
-      expect(result).toEqual([{ id: 1, description: 'Serviço Radar' }]);
+      expect(result).toEqual([{ id: "1", description: 'Serviço Radar' }]); 
     });
 
     it('deve converter e usar o raio fornecido (ex: 5000 metros)', async () => {
@@ -137,6 +139,35 @@ describe('JobsService', () => {
           radius: 5000,
         }),
       );
+    });
+  });
+
+  describe('create - refactor UUID', () => {
+    it('deve criar um novo job com sucesso usando UUID #37', async () => {
+      const mockDto = { description: 'Teste', longitude: 0, latitude: 0 };
+      const mockUserId = 'uuid-v4-string';
+      const mockUser = { id: mockUserId, name: 'Ismael' };
+
+      mockUsersService.findById.mockResolvedValue(mockUser);
+      mockJobRepository.create.mockReturnValue({ ...mockDto, client: mockUser });
+      mockJobRepository.save.mockResolvedValue({ id: 'job-id', ...mockDto });
+
+      const result = await service.create(mockDto as any, mockUserId);
+
+      expect(mockUsersService.findById).toHaveBeenCalledWith(mockUserId);
+      expect(result).toHaveProperty('id');
+    });
+  });
+
+  describe('findByClient - refactor UUID', () => {
+    it('deve retornar lista de jobs de um cliente usando UUID #37', async () => {
+      const mockUserId = 'uuid-v4-string';
+      mockJobRepository.find.mockResolvedValue([{ id: 'job-1' }, { id: 'job-2' }]);
+
+      const result = await service.findByClient(mockUserId);
+
+      expect(mockJobRepository.find).toHaveBeenCalled();
+      expect(Array.isArray(result)).toBe(true);
     });
   });
 });

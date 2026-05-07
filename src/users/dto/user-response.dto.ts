@@ -2,7 +2,7 @@ import { User } from '../entities/user.entity';
 import { ProfileResponseDto } from './profile-response.dto';
 
 export class UserResponseDto {
-  id: number;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;

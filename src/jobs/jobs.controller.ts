@@ -16,7 +16,7 @@ import { RoleName } from 'src/roles/enums/role.enum';
 
 interface AuthRequest extends Request {
   user: {
-    id: number;
+    id: string;
     roles: string[];
   };
 }
