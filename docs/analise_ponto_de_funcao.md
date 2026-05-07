@@ -138,7 +138,89 @@ Para realizar a contagem das próximas User Stories (como o Radar de Jobs e Aval
 | US03 - Solicitar Serviço | (a definir) | Pendente |
 | **Total Não Ajustado (PFNA)** | **22 PF** | |
 
+---
 
+## Contagem de Pontos de Função - US04 (Detalhamento)
+
+| Identificação | Funcionalidade (Processo Elementar) | Tipo | ALR | DER | Complexidade | PF |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| US04 | Cancelar Serviço pelo Cliente | EE | 1 | 4 | Baixa | 3 |
+| US04 | Cancelar Serviço pelo Profissional | EE | 1 | 5 | Baixa | 3 |
+
+### Justificativa da Complexidade (Matriz IFPUG)
+
+A funcionalidade foi classificada como **Entrada Externa (EE)** pois recebe uma ação do usuário autenticado que altera dados persistidos na entidade `Job`, modificando o estado do serviço dentro do sistema.
+
+---
+
+### 1. Arquivos Lógicos Referenciados (ALR)
+
+A transação interage com:
+
+* `Job` (Leitura e Atualização)
+  * Validação do status atual (`SEARCHING`, `ACCEPTED`, `COMPLETED`, `CANCELED`)
+  * Verificação de propriedade (`client_id` e `professional_id`)
+  * Atualização do status e vínculo do profissional
+
+Resultado:
+* **1 ALR**
+
+---
+
+### 2. Tipos de Dados (DER)
+
+#### Cancelamento realizado pelo Cliente
+Os seguintes elementos atravessam a fronteira da aplicação:
+
+* `job_id`
+* `user_id` (extraído do JWT)
+* `status`
+* `mensagem de retorno`
+
+Resultado:
+* **4 DER**
+
+---
+
+#### Cancelamento realizado pelo Profissional
+
+Os seguintes elementos atravessam a fronteira da aplicação:
+
+* `job_id`
+* `user_id`
+* `status`
+* `professional_id`
+* `mensagem de retorno`
+
+Resultado:
+* **5 DER**
+
+---
+
+### Classificação IFPUG
+
+Segundo a tabela padrão do IFPUG para **Entradas Externas (EE)**:
+
+| ALR | DER | Complexidade |
+| --- | --- | --- |
+| 1 | 1 a 15 | Baixa |
+
+Portanto:
+
+* **Cancelar Serviço pelo Cliente** → Complexidade **Baixa** → **3 PF**
+* **Cancelar Serviço pelo Profissional** → Complexidade **Baixa** → **3 PF**
+
+---
+
+## Total da US04
+
+| Componente Funcional | Tipo | Complexidade | PF |
+| --- | --- | --- | --- |
+| Transação: Cancelar Serviço pelo Cliente | EE | Baixa | 3 PF |
+| Transação: Cancelar Serviço pelo Profissional | EE | Baixa | 3 PF |
+| **Total da US04** | | | **6 PF** |
+
+---
 
 ## Contagem de Pontos de Função - US05 (Detalhamento)
 
