@@ -459,6 +459,230 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
   </tr>
 </table>
 
+<br>
+
+# Especificação de Caso de Uso: UC04 - Cancelar Solicitação de Serviço
+
+---
+
+## 1. Identificação
+
+- **Caso de Uso:** UC04 - Cancelar Solicitação de Serviço (Referente à US04)
+- **Atores Principais:** Cliente, Profissional
+- **Atores Secundários:** Sistema de Autenticação JWT
+- **Resumo:**  
+Este caso de uso descreve o processo de cancelamento de um serviço (`Job`) ainda não concluído na plataforma iService. O cancelamento pode ser realizado tanto pelo cliente que criou a solicitação quanto pelo profissional que aceitou a demanda, respeitando as regras de permissão e status definidas pelo sistema.
+
+---
+
+## 2. Pré-condições
+
+- O usuário deve estar autenticado na plataforma através de um Token JWT válido.
+- O `Job` deve existir no banco de dados.
+- O `Job` deve estar com status `SEARCHING` ou `ACCEPTED`.
+- O usuário autenticado deve possuir vínculo com o serviço:
+  - Ser o `client_id` do Job; ou
+  - Ser o `professional_id` associado ao Job.
+
+---
+
+## 3. Pós-condições
+
+### Sucesso (Cancelamento pelo Cliente)
+- O status do Job é atualizado para `CANCELED`.
+- O serviço deixa de aparecer no radar e em listagens ativas.
+- O sistema retorna mensagem de sucesso.
+
+### Sucesso (Cancelamento pelo Profissional)
+- O status do Job retorna para `SEARCHING`.
+- O campo `professional_id` é definido como `null`.
+- O serviço volta a ficar disponível no radar para outros profissionais.
+
+### Falha
+- Nenhuma alteração é persistida no banco de dados.
+- O sistema retorna mensagem de erro apropriada.
+
+---
+
+# 4. Fluxos de Eventos
+
+## 4.1. Fluxo Principal 1: Cancelamento realizado pelo Cliente
+
+1. O Cliente acessa os detalhes de um serviço ativo.
+2. O sistema exibe a opção “Cancelar Serviço”.
+3. O Cliente confirma a ação de cancelamento.
+4. O Frontend envia a requisição autenticada contendo o `job_id`.
+5. O Backend valida o Token JWT e identifica o usuário autenticado.
+6. O sistema recupera o Job correspondente no banco de dados.
+7. O sistema valida se:
+   - O status do Job é `SEARCHING` ou `ACCEPTED`;
+   - O usuário autenticado é o proprietário (`client_id`) do Job.
+8. O sistema altera o status do Job para `CANCELED`.
+9. O sistema persiste a alteração no banco de dados.
+10. O sistema retorna a mensagem:
+    - `"Serviço cancelado com sucesso."`
+11. O caso de uso é encerrado com sucesso.
+
+---
+
+## 4.2. Fluxo Principal 2: Cancelamento realizado pelo Profissional
+
+1. O Profissional acessa os detalhes de um serviço aceito.
+2. O sistema exibe a opção “Cancelar Participação”.
+3. O Profissional confirma a ação.
+4. O Frontend envia a requisição autenticada contendo o `job_id`.
+5. O Backend valida o Token JWT.
+6. O sistema recupera o Job correspondente.
+7. O sistema valida se:
+   - O status atual é `ACCEPTED`;
+   - O usuário autenticado corresponde ao `professional_id`.
+8. O sistema remove o vínculo do profissional:
+   - `professional_id = null`
+9. O sistema altera o status do Job para `SEARCHING`.
+10. O sistema persiste as alterações no banco.
+11. O sistema retorna a mensagem:
+    - `"Serviço cancelado com sucesso."`
+12. O Job volta a aparecer no radar de outros profissionais.
+13. O caso de uso é encerrado com sucesso.
+
+---
+
+## 4.3. Fluxos Alternativos
+
+### FA01 - Tentativa de Cancelamento de Serviço Finalizado
+
+- No passo 7 dos Fluxos Principais, caso o Job esteja com status `COMPLETED`, o sistema bloqueia a operação e retorna:
+  - `"Não é possível cancelar um serviço que já foi finalizado."`
+
+---
+
+### FA02 - Serviço Já Cancelado
+
+- Caso o Job já possua status `CANCELED`, o sistema impede nova alteração e informa:
+  - `"Este serviço já foi cancelado."`
+
+---
+
+### FA03 - Usuário sem Permissão
+
+- Caso o usuário autenticado não seja:
+  - O cliente dono do Job; nem
+  - O profissional associado;
+
+o sistema retorna:
+- `"Você não tem permissão para alterar o status deste serviço."`
+
+---
+
+## 4.4. Fluxos de Exceção
+
+### FE01 - Job Não Encontrado
+
+- Caso o `job_id` informado não exista no banco de dados:
+  - O sistema retorna erro `404 - Serviço não encontrado`.
+
+---
+
+### FE02 - Token JWT Inválido ou Expirado
+
+- Caso o Token JWT esteja inválido, ausente ou expirado:
+  - O sistema retorna erro `401 - Não autenticado`.
+
+---
+
+### FE03 - Falha de Persistência no Banco
+
+- Caso ocorra falha ao salvar as alterações:
+  - O sistema realiza rollback da transação.
+  - O sistema retorna:
+    - `"Não foi possível cancelar o serviço no momento. Tente novamente."`
+
+---
+
+# 5. Regras de Negócio (RN)
+
+| ID | Regra | Descrição |
+| :--- | :--- | :--- |
+| **RN01** | Restrição de Status | O sistema só permite cancelamento se o Job estiver em `SEARCHING` ou `ACCEPTED`. |
+| **RN02** | Permissão de Propriedade | Apenas o Cliente dono do Job ou o Profissional associado podem cancelar. |
+| **RN03** | Retorno ao Radar | Quando o Profissional cancela, o Job retorna para `SEARCHING` e `professional_id` volta para `null`. |
+| **RN04** | Integridade de Histórico | O sistema deve manter registro da alteração de status para auditoria e rastreabilidade. |
+| **RN05** | Autenticação Obrigatória | Toda operação de cancelamento exige Token JWT válido. |
+
+---
+
+# 6. Modelo de Dados Impactado
+
+## Entidade `Job`
+
+| Campo | Tipo | Impacto |
+| :--- | :--- | :--- |
+| `id` | UUID | Identificador único do serviço |
+| `client_id` | UUID | Identifica o cliente proprietário |
+| `professional_id` | UUID (Nullable) | Pode ser removido no cancelamento do profissional |
+| `status` | ENUM | Atualizado para `CANCELED` ou `SEARCHING` |
+| `updated_at` | Timestamp | Atualizado automaticamente após alteração |
+
+---
+
+# 7. Mensagens do Sistema
+
+| ID | Tipo | Mensagem |
+| :--- | :--- | :--- |
+| **MSG01** | Sucesso | "Serviço cancelado com sucesso." |
+| **MSG02** | Erro RN01 | "Não é possível cancelar um serviço que já foi finalizado." |
+| **MSG03** | Erro RN02 | "Você não tem permissão para alterar o status deste serviço." |
+| **MSG04** | Erro | "Este serviço já foi cancelado." |
+| **MSG05** | Erro | "Serviço não encontrado." |
+| **MSG06** | Erro | "Não autenticado." |
+
+---
+
+# 8. Testes de Aceitação (TA)
+
+## TA04.01 - Cancelamento pelo Cliente
+
+**Dado que** o cliente é proprietário do Job X com status `ACCEPTED`  
+**Quando** ele solicita o cancelamento  
+**Então** o status deve mudar para `CANCELED`  
+**E** a mensagem MSG01 deve ser exibida.
+
+---
+
+## TA04.02 - Cancelamento pelo Profissional
+
+**Dado que** o profissional está associado ao Job X  
+**Quando** ele cancela sua participação  
+**Então** o `professional_id` deve ficar `null`  
+**E** o status deve retornar para `SEARCHING`.
+
+---
+
+## TA04.03 - Tentativa sem Permissão
+
+**Dado que** o usuário autenticado não é dono nem profissional do Job  
+**Quando** ele tenta cancelar o serviço  
+**Então** o sistema deve bloquear a operação  
+**E** retornar a MSG03.
+
+---
+
+## TA04.04 - Tentativa de Cancelar Serviço Finalizado
+
+**Dado que** o Job possui status `COMPLETED`  
+**Quando** o usuário tenta cancelar  
+**Então** o sistema deve impedir a alteração  
+**E** retornar a MSG02.
+
+---
+
+## TA04.05 - Tentativa com Token Inválido
+
+**Dado que** a requisição possui Token JWT inválido ou expirado  
+**Quando** o usuário envia a solicitação  
+**Então** o sistema deve retornar erro `401`.
+
+
 ### User Story US05 - Avaliar Serviço e Profissional
 
 <table>
