@@ -65,8 +65,8 @@ Para realizar a contagem das próximas User Stories (como o Radar de Jobs e Aval
 
 | Funcionalidade / Entidade | Pontos de Função (PF) | Status |
 | --- | --- | --- |
-| Entidades de Dados (ALIs e AIEs do Sistema) | 12 PF (Users, Google) | Em evolução |
+| Entidades de Dados (ALIs e AIEs do Sistema) | 19 PF (Users, Google, Jobs) | Em evolução |
 | US01 - Manter Usuário | 10 PF (Apenas transações) | Contabilizado |
 | US02 - Manter Perfil | (a definir) | Pendente |
-| US03 - Solicitar Serviço | (a definir) | Pendente |
-| **Total Não Ajustado (PFNA)** | **22 PF** | |
+| US03 - Manter Serviço | 8 PF (Apenas transações) | Contabilizado |
+| **Total Não Ajustado (PFNA)** | **37 PF** | |
