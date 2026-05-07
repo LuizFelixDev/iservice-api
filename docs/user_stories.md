@@ -657,6 +657,47 @@ Seguindo a estrutura solicitada e o nível de detalhamento técnico para o proje
 | `payload.picture` | `avatar_url` | `Profile` |
 | `payload.sub` | `google_id` | `User` (opcional para vínculo) |
 
+Para a **US06 (Manter Serviço na Visão Profissional)**, a contagem de Pontos de Função (APF) foca na complexidade da lógica geoespacial e na criticidade da transação de aceite (concorrência).
+
+Abaixo está a contagem detalhada:
+
+---
+
+## 1. Funções de Dados (Arquivos)
+
+| Identificador | Nome | Tipo | Complexidade | Pontos de Função |
+| :--- | :--- | :--- | :--- | :--- |
+| **ALI01** | **Arquivo de Jobs (Serviços)** | ALI | Média | **10 PF** |
+
+*   **Justificativa:** O arquivo contém dados geográficos (PostGIS), status do ciclo de vida e chaves estrangeiras. A manutenção da integridade desses dados durante o processo de matchmaking eleva a complexidade para Média.
+
+---
+
+## 2. Funções de Transação
+
+| Identificador | Operação | Tipo | Descrição Técnica | Complexidade | Pontos de Função |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **CE01** | **Radar de Demandas** | CE | Consulta de Jobs 'SEARCHING' baseada no raio geográfico do profissional. | Média | **4 PF** |
+| **CE02** | **Visualizar Detalhes** | CE | Recuperação de descrição, categoria e distância específica de um Job. | Baixa | **3 PF** |
+| **EE01** | **Aceite de Serviço** | EE | Atualização do status para 'ACCEPTED' e vinculação do ID do profissional (Lógica de atomicidade). | Alta | **6 PF** |
+| **CE03** | **Visualizar Agenda** | CE | Listagem de serviços aceitos e pendentes vinculados ao profissional. | Baixa | **3 PF** |
+
+*   **Justificativa da EE01 (Alta):** O aceite não é uma simples alteração. Ele exige uma validação de concorrência no banco de dados para garantir que apenas um profissional assuma o Job, tratando falhas simultâneas.
+
+---
+
+## 3. Resumo da Contagem (US06)
+
+*   **Total de Pontos de Função de Dados:** 10 PF
+*   **Total de Pontos de Função de Transação:** 16 PF
+*   **Contagem Total US06:** **26 PF**
+
+---
+
+## 4. Impacto no Sistema iService
+
+A **US06** representa uma das partes mais densas do sistema, contribuindo com aproximadamente **18% a 20% do núcleo funcional do MVP** (estimado em 140 PF). O esforço de desenvolvimento aqui é maior devido à integração com o PostGIS e ao tratamento de race conditions no banco de dados PostgreSQL.
+
 ### User Story US07 - Concluir Serviço em Andamento
 
 <table>
