@@ -820,7 +820,7 @@ o sistema retorna:
 
 <table>
   <tr>
-    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US04</th>
+    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US06</th>
   </tr>
   <tr>
     <td style="width:25%;padding:6px;"><strong>Título</strong></td>
@@ -840,6 +840,7 @@ o sistema retorna:
     <td style="padding:6px;"><strong>Requisitos Relacionados</strong></td>
     <td style="padding:6px;">RF04.01, RF04.02, RF04.03</td>
   </tr>
+
   <tr>
     <td style="padding:6px;"><strong>Critérios de Aceitação</strong></td>
     <td style="padding:6px;">
@@ -890,6 +891,94 @@ o sistema retorna:
     </td>
   </tr>
 </table>
+
+Seguindo a estrutura solicitada e o nível de detalhamento técnico para o projeto **iService**, aqui está o detalhamento completo do **Caso de Uso UC01**, integrando a lógica de autenticação híbrida (Tradicional + OAuth 2.0).
+
+---
+
+## 1. Identificação
+
+*   **Caso de Uso:** UC01 - Manter Usuário e Autenticação (Referente à US01)
+*   **Atores Principais:** Visitante (Usuário não logado)
+*   **Atores Secundários:** Provedor de Identidade Google (Google OAuth 2.0 API)
+*   **Resumo:** Este caso de uso descreve os passos para um visitante criar uma nova conta ou autenticar-se na plataforma iService, seja através de credenciais tradicionais (e-mail e senha) ou utilizando o Single Sign-On (SSO) de plataformas terceiras, como o Google.
+
+---
+
+## 2. Pré-condições
+
+1.  O aplicativo mobile deve estar conectado à internet.
+2.  Para login via Google, o dispositivo do usuário deve ter os serviços do Google Play configurados ou permitir acesso ao navegador para o consentimento OAuth.
+
+---
+
+## 3. Pós-condições
+
+*   **Sucesso:** O usuário é autenticado, a sessão é iniciada (Token JWT é armazenado localmente no dispositivo) e o sistema redireciona para a tela inicial (Radar ou Home). Caso seja o primeiro acesso via Google, a conta base e o perfil inicial são criados automaticamente.
+*   **Falha:** O sistema exibe uma mensagem de erro clara, nenhuma sessão é criada e o usuário permanece na tela de login/cadastro.
+
+---
+
+## 4. Fluxos de Eventos
+
+### 4.1. Fluxo Principal 1: Cadastro e Login Tradicional (E-mail e Senha)
+1.  O Visitante acessa a tela inicial do aplicativo e seleciona "Cadastrar com E-mail".
+2.  O sistema exibe o formulário solicitando: E-mail e Senha.
+3.  O Visitante preenche os dados e submete o formulário.
+4.  O sistema valida o formato do e-mail e a força da senha (**RN01**).
+5.  O sistema verifica no banco de dados se o e-mail já existe.
+6.  O sistema criptografa a senha utilizando **Bcrypt** (**RN02**).
+7.  O sistema persiste o novo registro na entidade `User` e cria um `Profile` inicial em branco.
+8.  O sistema gera um Token JWT com o UUID do usuário no payload.
+9.  O sistema retorna o Token JWT para o Frontend.
+10. O caso de uso é encerrado com sucesso.
+
+### 4.2. Fluxo Principal 2: Login / Cadastro via Plataforma Terceira (Google SSO)
+1.  O Visitante acessa a tela inicial e seleciona "Continuar com o Google".
+2.  O aplicativo abre a interface nativa de consentimento do Google OAuth 2.0.
+3.  O Visitante seleciona sua conta Google e autoriza o compartilhamento de dados básicos (Perfil e E-mail).
+4.  O Provedor (Google) retorna um `id_token` assinado para o Frontend do iService.
+5.  O Frontend repassa esse `id_token` para o Backend.
+6.  O Backend valida criptograficamente o `id_token` contra os servidores da Google (garantindo que não foi forjado ou expirado).
+7.  O Backend extrai as informações do payload do Google: `email`, `name`, `picture` (foto de perfil) e `email_verified`.
+8.  O sistema verifica se já existe um usuário cadastrado com esse e-mail no banco de dados:
+    *   **Se NÃO existe (Novo Usuário):** O sistema cria automaticamente a conta `User` (com password nulo) e preenche o `Profile` inicial com o Nome e a Foto extraídos do Google.
+    *   **Se JÁ existe (Usuário Recorrente):** O sistema apenas recupera o UUID associado a este e-mail.
+9.  O sistema gera o Token JWT interno do iService com o UUID do usuário.
+10. O sistema retorna o Token JWT e os dados do perfil para o Frontend.
+11. O caso de uso é encerrado com sucesso.
+
+### 4.3. Fluxos Alternativos
+*   **FA01 - E-mail já cadastrado:** No passo 5 do fluxo 1, se o e-mail estiver em uso, o sistema aborta o cadastro e exibe a mensagem: "Este e-mail já está em uso. Deseja fazer login?".
+*   **FA02 - Credenciais Inválidas:** Se o visitante tentar fazer login com uma senha que não bate com o hash salvo, o sistema exibe "E-mail ou senha incorretos" (mantendo a ambiguidade por segurança).
+*   **FA03 - Mesclagem de Contas:** Se no passo 8 do Fluxo 2 o e-mail do Google já existir (criado via e-mail/senha), o sistema permite o login, vinculando a identidade Google ao cadastro existente.
+
+### 4.4. Fluxos de Exceção
+*   **FE01 - Falha de Comunicação OAuth:** Se os servidores da Google estiverem indisponíveis ou a validação falhar, o sistema interrompe o processo e informa: "Não foi possível conectar ao Google no momento".
+*   **FE02 - Permissão Negada:** Se o usuário fechar a tela do Google ou negar o consentimento, o fluxo é cancelado e o usuário retorna à tela de login.
+
+---
+
+## 5. Regras de Negócio (RN)
+
+| ID | Regra | Descrição |
+| :--- | :--- | :--- |
+| **RN01** | **Validação de Entrada** | O e-mail deve seguir o padrão regex. A senha deve possuir no mínimo 8 caracteres. |
+| **RN02** | **Criptografia** | Proibido salvar senhas em texto claro. Utilizar algoritmo de hash seguro com salt (Ex: **Bcrypt**). |
+| **RN03** | **Ciclo de Vida JWT** | O Token deve ter validade definida (ex: 7 dias) e ser assinado com a chave secreta `JWT_SECRET`. |
+| **RN04** | **Senhas Sociais** | Contas criadas via Google possuem `password` nulo. O login tradicional é bloqueado para elas até que uma senha seja definida no perfil. |
+| **RN05** | **Audience Match** | O Backend só aceitará `id_tokens` cujo campo `aud` coincida com o *Client ID* do projeto no Google Cloud Console. |
+
+---
+
+## 6. Mapeamento de Dados de Terceiros (Google OAuth)
+
+| Dado do Provedor | Campo no Backend (iService) | Entidade Destino |
+| :--- | :--- | :--- |
+| `payload.email` | `email` | `User` |
+| `payload.name` | `name` | `Profile` |
+| `payload.picture` | `avatar_url` | `Profile` |
+| `payload.sub` | `google_id` | `User` (opcional para vínculo) |
 
 ### User Story US07 - Concluir Serviço em Andamento
 
