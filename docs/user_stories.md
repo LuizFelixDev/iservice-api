@@ -10,6 +10,155 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
 | 26/03/2026 | 1.0.0   | Detalhamento dos User Stories US01, US02 e US03 e atribuição da equipe | Caio Lucas Lopes |
 
 ---
+
+### User Story US01 - Manter Usuário (Autenticação)
+
+<table>
+  <tr>
+    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US01</th>
+  </tr>
+  <tr>
+    <td style="width:25%;padding:6px;"><strong>Título</strong></td>
+    <td style="padding:6px;">Gerenciar o cadastro e autenticação de usuários na plataforma iService.</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Identificação</strong></td>
+    <td style="padding:6px;">US01 - Manter Usuário</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Story</strong></td>
+    <td style="padding:6px;">
+      Como <em>visitante</em>, quero <em>me cadastrar e fazer login com segurança</em>, para <em>poder acessar as funcionalidades restritas do aplicativo</em>.
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Requisitos Relacionados</strong></td>
+    <td style="padding:6px;">RF01.01, RF01.02, RF01.03, RF01.04</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Critérios de Aceitação</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li>O sistema não deve permitir o cadastro de dois usuários com o mesmo e-mail.</li>
+        <li>A senha deve ser armazenada criptografada no banco de dados.</li>
+        <li>O login bem-sucedido deve retornar um token JWT válido.</li>
+        <li>O sistema deve permitir o login via provedor externo (Google).</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Testes de Aceitação</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li>TA01.01 - Cadastro bem-sucedido com e-mail não existente.</li>
+        <li>TA01.02 - Tentativa de cadastro com e-mail duplicado retorna erro 409.</li>
+        <li>TA01.03 - Login com credenciais válidas retorna token de acesso.</li>
+        <li>TA01.04 - Login com token válido do Google cria conta e retorna JWT interno.</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Estimativa</strong></td>
+    <td style="padding:6px;">12h</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Tempo Real Gasto</strong></td>
+    <td style="padding:6px;">--</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Tamanho Funcional</strong></td>
+    <td style="padding:6px;">8 PF</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Prioridade</strong></td>
+    <td style="padding:6px;">Essencial</td>
+  </tr>
+  <tr>
+    <td style="padding:6px;"><strong>Responsáveis</strong></td>
+    <td style="padding:6px;">
+      <ul>
+        <li><strong>Analista:</strong> Caio Lucas Lopes</li>
+        <li><strong>Desenvolvedor:</strong> Kaique Vieira Soares (Back-end)</li>
+        <li><strong>Revisor:</strong> Ismael Gomes Da Silva</li>
+        <li><strong>Testador:</strong> Eduardo Nascimento Santos</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+### Especificação de Caso de Uso: UC01 - Manter Usuário e Autenticação
+
+#### 1. Identificação
+* **Caso de Uso:** UC01 - Manter Usuário e Autenticação (Referente à US01)
+* **Atores Principais:** Visitante (Usuário não logado)
+* **Atores Secundários:** Provedor de Identidade Google (Google OAuth 2.0 API)
+* **Resumo:** Este caso de uso descreve os passos para um visitante criar uma nova conta ou autenticar-se na plataforma iService, seja através de credenciais tradicionais (e-mail e senha) ou utilizando o Single Sign-On (SSO) de plataformas terceiras, como o Google.
+
+#### 2. Pré-condições
+* O aplicativo mobile deve estar conectado à internet.
+* Para login via Google, o dispositivo do usuário deve ter os serviços do Google Play configurados ou permitir acesso ao navegador para o consentimento OAuth.
+
+#### 3. Pós-condições
+* **Sucesso:** O usuário é autenticado, a sessão é iniciada (Token JWT é armazenado localmente no dispositivo) e o sistema redireciona para a tela inicial (Radar ou Home). Caso seja o primeiro acesso via Google, a conta base e o perfil inicial são criados automaticamente.
+* **Falha:** O sistema exibe uma mensagem de erro clara, nenhuma sessão é criada e o usuário permanece na tela de login/cadastro.
+
+#### 4. Fluxos de Eventos
+
+##### 4.1. Fluxo Principal 1: Cadastro e Login Tradicional (E-mail e Senha)
+1. O Visitante acessa a tela inicial do aplicativo e seleciona "Cadastrar com E-mail".
+2. O sistema exibe o formulário solicitando: E-mail e Senha.
+3. O Visitante preenche os dados e submete o formulário.
+4. O sistema valida o formato do e-mail e a força da senha (RN01).
+5. O sistema verifica no banco de dados se o e-mail já existe.
+6. O sistema criptografa a senha utilizando *Bcrypt* (RN02).
+7. O sistema persiste o novo registro na entidade `User` e cria um `Profile` inicial em branco.
+8. O sistema gera um Token JWT com o UUID do usuário no *payload*.
+9. O sistema retorna o Token JWT para o Frontend.
+10. O caso de uso é encerrado com sucesso.
+
+##### 4.2. Fluxo Principal 2: Login / Cadastro via Plataforma Terceira (Google SSO)
+1. O Visitante acessa a tela inicial e seleciona "Continuar com o Google".
+2. O aplicativo abre a interface nativa de consentimento do Google OAuth 2.0.
+3. O Visitante seleciona sua conta Google e autoriza o compartilhamento de dados básicos (Perfil e E-mail).
+4. O Provedor (Google) retorna um `id_token` assinado para o Frontend do iService.
+5. O Frontend repassa esse `id_token` para o Backend.
+6. O Backend valida criptograficamente o `id_token` contra os servidores da Google (garantindo que não foi forjado ou expirado).
+7. O Backend extrai as informações do payload do Google: `email`, `name`, `picture` (foto de perfil) e `email_verified`.
+8. O sistema verifica se já existe um usuário cadastrado com esse `email` no banco de dados:
+   * **Se NÃO existe (Novo Usuário):** O sistema cria automaticamente a conta `User` (sem senha) e preenche o `Profile` inicial com o Nome e a Foto extraídos do Google.
+   * **Se JÁ existe (Usuário Recorrente):** O sistema apenas recupera o UUID associado a este e-mail.
+9. O sistema gera o Token JWT interno do iService com o UUID do usuário.
+10. O sistema retorna o Token JWT e os dados do perfil para o Frontend.
+11. O caso de uso é encerrado com sucesso.
+
+##### 4.3. Fluxos Alternativos
+* **FA01 - E-mail já cadastrado (No Fluxo Principal 1):** No passo 5 do fluxo 1, se o e-mail já estiver em uso, o sistema aborta o cadastro e exibe a mensagem: "Este e-mail já está em uso. Deseja fazer login?".
+* **FA02 - Credenciais Inválidas na Autenticação Tradicional:** Se o visitante tentar fazer login com uma senha que não bate com o hash salvo, o sistema exibe "E-mail ou senha incorretos" (sem especificar qual dos dois está errado por questões de segurança).
+* **FA03 - Mesclagem de Contas (E-mail tradicional tentando usar Google):** Se no passo 8 do Fluxo 2 o sistema identificar que o e-mail do Google já existe na base (mas foi criado originalmente via e-mail/senha), o sistema permite o login, vinculando a conta Google ao cadastro existente de forma transparente.
+
+##### 4.4. Fluxos de Exceção
+* **FE01 - Falha de Comunicação com o Provedor OAuth:** Se os servidores da Google estiverem indisponíveis ou a validação do token falhar (timeout), o sistema interrompe o processo e informa: "Não foi possível conectar ao Google no momento. Tente novamente ou use seu e-mail".
+* **FE02 - Permissão Negada pelo Usuário:** Se no passo 3 do Fluxo 2 o usuário fechar a tela do Google ou negar o consentimento, o fluxo é cancelado silenciosamente e o usuário retorna à tela inicial de login.
+
+##### 5. Regras de Negócio (RN)
+
+| ID | Regra | Descrição |
+| :--- | :--- | :--- |
+| **RN01** | Validação de Entrada | O e-mail deve ter um formato válido (regex padrão). A senha tradicional deve possuir no mínimo 8 caracteres. |
+| **RN02** | Criptografia Irreversível | É estritamente proibido salvar senhas em texto claro no banco PostgreSQL. Deve-se aplicar um algoritmo de hash seguro com *salt* (ex: Bcrypt). |
+| **RN03** | Ciclo de Vida do JWT | O Token JWT interno deve ter uma validade configurada (ex: 7 dias) e ser assinado com a chave secreta (`JWT_SECRET`) armazenada nas variáveis de ambiente. |
+| **RN04** | Senha Nula para Contas Sociais | Usuários que nascem a partir do fluxo do Google (SSO) terão a coluna `password` nula no banco de dados, sendo impossibilitados de logar pelo fluxo tradicional até que configurem uma senha explicitamente na sua página de perfil. |
+| **RN05** | Confiança de Provedor | A API do iService só aceitará `id_tokens` do Google se o campo `aud` (Audience) coincidir exatamente com o *Client ID* registrado no Google Cloud Console do projeto. |
+
+##### 6. Mapeamento de Dados de Terceiros (Google OAuth)
+Os dados providos pela API de autenticação do Google serão mapeados para o banco de dados interno da seguinte forma durante o primeiro acesso:
+
+* **E-mail:** `payload.email` é salvo na tabela `users`, coluna `email`.
+* **Nome:** `payload.name` é salvo na tabela `profiles`, coluna `name` ou `bio` (dependendo da estrutura atual).
+* **Foto de Perfil:** `payload.picture` é capturado e armazenado na entidade `Profile` (ou localmente) para exibição do avatar do usuário no aplicativo.
+
 ### User Story US02 - Manter Perfil (Role e Contato)
 
 <table>
