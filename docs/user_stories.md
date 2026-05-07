@@ -494,39 +494,6 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
   </tr>
 </table>
 
-## Especificação de Caso de Uso: US05 - Avaliar Serviço
-
-**Descrição:**
-> **Como** Cliente,
-> **Quero** avaliar o serviço prestado após a conclusão,
-> **Para** compartilhar minha experiência e ajudar outros usuários a escolherem profissionais de qualidade.
-
-**Regras de Negócio (RN):**
-* **RN01 - Restrição de Status:** A avaliação só pode ser realizada para Jobs com status `COMPLETED`.
-* **RN02 - Avaliação Única:** Cada cliente pode avaliar um Job apenas uma vez.
-* **RN03 - Integridade da Nota:** A avaliação deve conter uma nota entre 1 e 5 estrelas e um comentário opcional.
-* **RN04 - Associação Correta:** A avaliação deve estar vinculada ao `job_id` e ao `professional_id`.
-
-**Mensagens do Sistema:**
-* **MSG01 (Sucesso):** "Avaliação registrada com sucesso."
-* **MSG02 (Erro - RN01):** "Só é possível avaliar serviços concluídos."
-* **MSG03 (Erro - RN02):** "Este serviço já foi avaliado."
-* **MSG04 (Erro - RN03):** "A nota deve estar entre 1 e 5 estrelas."
-
-**Testes de Aceitação (TA):**
-* **TA05.01 - Avaliação com Sucesso:** *Dado que* o Job está com status COMPLETED, 
-  *Quando* o cliente envia uma avaliação válida, 
-  *Então* o sistema salva a avaliação e retorna MSG01.
-* **TA05.02 - Tentativa Antes da Conclusão:** *Dado que* o Job está com status ACCEPTED, 
-  *Quando* o cliente tenta avaliar, 
-  *Então* o sistema bloqueia e retorna MSG02.
-* **TA05.03 - Avaliação Duplicada:** *Dado que* o cliente já avaliou o Job, 
-  *Quando* tenta avaliar novamente, 
-  *Então* o sistema retorna MSG03.
-* **TA05.04 - Nota Inválida:** *Dado que* a nota enviada está fora do intervalo permitido, 
-  *Quando* o cliente envia a avaliação, 
-  *Então* o sistema retorna MSG04.
-
 ### User Story US06 - Manter Serviço na visão do profissional (Jobs e Matchmaking)
 
 <table>
@@ -679,5 +646,4 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
       </ul>
     </td>
   </tr>
-</table>
 </table>
