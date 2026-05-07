@@ -231,6 +231,50 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
 
 <br>
 
+### Especificação de Caso de Uso: User Story US02 - Manter Perfil (Role e Contato)
+
+**Descrição:**
+> **Como** usuário autenticado,
+> **Quero** gerenciar meu perfil e alternar entre os tipos de conta (Cliente/Profissional),
+> **Para** atualizar minhas informações pessoais e atuar em diferentes papéis dentro da plataforma.
+
+---
+
+**Regras de Negócio (RN):**
+* **RN01 - Autenticação Obrigatória:** Apenas usuários autenticados podem acessar e modificar o perfil.
+* **RN02 - Alteração de Role:** O usuário pode alternar entre as roles `USER` e `PROFESSIONAL`.
+* **RN03 - Atualização de Dados Pessoais:** O usuário pode atualizar biografia e telefone de contato.
+* **RN04 - Persistência de Dados:** Todas as alterações devem ser persistidas no banco de dados imediatamente.
+* **RN05 - Validação de Telefone:** O telefone deve seguir um formato válido antes de ser salvo.
+* **RN06 - Reflexo Imediato de Permissões:** A alteração de role deve refletir imediatamente nas permissões do sistema.
+
+---
+
+**Mensagens do Sistema:**
+* **MSG01 (Sucesso - Atualização):** "Perfil atualizado com sucesso."
+* **MSG02 (Sucesso - Role):** "Tipo de conta alterado com sucesso."
+* **MSG03 (Erro - RN01):** "Usuário não autenticado."
+* **MSG04 (Erro - RN05):** "Telefone inválido."
+
+---
+
+**Testes de Aceitação (TA):**
+* **TA02.01 - Atualização de Perfil com Sucesso:** *Dado que* o usuário está autenticado,
+  *Quando* atualiza biografia e telefone com dados válidos,
+  *Então* o sistema salva as informações e retorna MSG01.
+
+* **TA02.02 - Alteração de Role com Sucesso:** *Dado que* o usuário está autenticado,
+  *Quando* alterna entre USER e PROFESSIONAL,
+  *Então* o sistema atualiza a role e reflete as permissões imediatamente, retornando MSG02.
+
+* **TA02.03 - Acesso Não Autenticado:** *Dado que* o usuário não está autenticado,
+  *Quando* tenta acessar ou alterar o perfil,
+  *Então* o sistema bloqueia a operação e retorna MSG03.
+
+* **TA02.04 - Telefone Inválido:** *Dado que* o usuário informa um telefone em formato inválido,
+  *Quando* tenta salvar o perfil,
+  *Então* o sistema rejeita a atualização e retorna MSG04.
+
 ### User Story US03 - Manter Serviço na visão do cliente (Jobs e Matchmaking)
 
 <table>
