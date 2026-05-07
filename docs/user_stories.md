@@ -315,6 +315,27 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
   </tr>
 </table>
 
+### Detalhamento BDD - US03
+
+**Cenário 1: Criação de solicitação com localização válida**
+* **Dado** que o cliente está autenticado no aplicativo
+* **E** informa uma descrição de serviço e permite o acesso ao seu GPS (latitude e longitude)
+* **Quando** o cliente confirma a solicitação
+* **Então** o sistema deve salvar os dados utilizando um tipo geográfico (Point - PostGIS)
+* **E** o status da solicitação deve ser iniciado como "SEARCHING".
+
+**Cenário 2: Visualização do histórico do cliente**
+* **Dado** que o cliente possui solicitações cadastradas
+* **Quando** ele acessa a tela de suas solicitações
+* **Então** o sistema deve exibir apenas as solicitações pertencentes a ele
+* **E** a lista deve estar ordenada da mais recente para a mais antiga (Data de Criação DESC).
+
+**Cenário 3: Acompanhamento de mudança de status**
+* **Dado** que o cliente possui uma solicitação em status "SEARCHING"
+* **Quando** um profissional próximo aceita o serviço
+* **Então** o status da solicitação deve ser atualizado para "ACCEPTED" na visão do cliente
+* **E** o cliente deve conseguir visualizar a mudança no painel.
+
 ### User Story US04 - Cancelar Solicitação de Serviço
 
 <table>
