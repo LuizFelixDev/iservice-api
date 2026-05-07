@@ -1,98 +1,99 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 iService API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Bem-vindo ao repositório oficial da API do **iService**! Este é o back-end do nosso marketplace de serviços on-demand, responsável por conectar clientes a profissionais locais em tempo real utilizando buscas geográficas avançadas.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 📚 Documentação do Projeto (Artefatos)
+Todos os documentos de engenharia de software elaborados para a disciplina encontram-se na pasta `/docs`:
+* [Documento de Visão](./docs/documento_visao.md)
+* [Modelo de Dados e Dicionário](./docs/modelo_dados.md)
+* [Lista de User Stories](./docs/user_stories.md)
+* [Arquitetura do projeto](./docs/arquitetura.md)
+* [Ponto de Funcao](./docs/analise_ponto_de_funcao.md)
 
-## Description
+## 🛠️ Tecnologias Utilizadas e Tutoriais
+* **Framework:** [NestJS](https://nestjs.com/) (TypeScript) - [Acessar Tutorial](https://docs.nestjs.com/)
+* **Banco de Dados:** PostgreSQL com a extensão **PostGIS** (para dados espaciais) - [Acessar Tutorial](https://postgis.net/documentation/getting_started/)
+* **ORM:** TypeORM - [Acessar Tutorial](https://typeorm.io/)
+* **Autenticação:** JWT (JSON Web Tokens) e Google OAuth
+* **Infraestrutura Local:** Docker & Docker Compose
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Project setup
+## ⚙️ Como rodar o projeto localmente
 
-```bash
-$ npm install
-```
+### 1. Pré-requisitos
+Antes de começar, certifique-se de ter as seguintes ferramentas instaladas em sua máquina:
+* **Node.js** (v20 ou superior)
+* **Docker** e **Docker Compose**
+* **Git**
 
-## Compile and run the project
+### 2. Configurando o Ambiente
+Clone o repositório para a sua máquina e instale as dependências do Node:
 
-```bash
-# development
-$ npm run start
+    git clone [https://github.com/luizfelixdev/iservice-api.git](https://github.com/luizfelixdev/iservice-api.git)
+    cd iservice-api
+    npm install
 
-# watch mode
-$ npm run start:dev
+### 3. Variáveis de Ambiente (.env)
 
-# production mode
-$ npm run start:prod
-```
+Nós não commitamos senhas e chaves secretas no GitHub! Para que o projeto funcione na sua máquina, siga estes passos:
 
-## Run tests
+- Crie uma cópia do arquivo `.env.example` e renomeie-a para `.env`.
+- Solicite as chaves secretas reais (como o `JWT_SECRET` e credenciais do banco) ao Tech Lead do projeto.
+- Preencha os valores correspondentes dentro do seu novo arquivo `.env`.
 
-```bash
-# unit tests
-$ npm run test
+### 4. Subindo o Banco de Dados (Docker)
 
-# e2e tests
-$ npm run test:e2e
+A nossa API depende do PostgreSQL e do PostGIS para funcionar e salvar as localizações. Já deixamos tudo configurado no Docker para facilitar a sua vida. No terminal, rode o comando abaixo:
 
-# test coverage
-$ npm run test:cov
-```
+    docker-compose up -d
 
-## Deployment
+💡 Dica: O `-d` faz o container rodar em segundo plano. O banco estará mapeado na porta `5433` para não conflitar com outras instalações de Postgres.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### 5. Iniciando a API
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Com o banco de dados rodando e o arquivo `.env` configurado corretamente, inicie o servidor em modo de desenvolvimento:
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+    npm run start:dev
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+A API estará rodando e escutando requisições em:
+`http://localhost:8404`
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## 🛡️ Padrões de Código e CI/CD (IMPORTANTE)
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Para mantermos a nossa base de código limpa, legível e livre de bugs, utilizamos o ESLint e o Prettier.
 
-## Support
+🚨 **Regra de Ouro:** Código fora do padrão não entra na branch principal.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Nós possuímos uma esteira de Integração Contínua (CI) configurada no GitHub Actions. Toda vez que você finalizar uma tarefa e abrir um Pull Request (PR) para as branches `main` ou `dev`, o GitHub criará uma máquina virtual e testará o seu código automaticamente.
 
-## Stay in touch
+O botão de Merge será BLOQUEADO pelo sistema se:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- O código tiver erros de TypeScript e não compilar (Build falhou).
+- O código estiver fora das regras de padronização (Lint falhou).
+  Ex: Variáveis não utilizadas, falta de ponto e vírgula, imports não utilizados.
 
-## License
+### 💡 Como evitar que o seu PR seja reprovado?
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Crie o hábito de rodar o fiscal de código na sua própria máquina antes de dar o `git commit` e fazer o push:
+
+    npm run lint
+    npm run lint --fix
+
+---
+
+## 📜 Lista de Comandos Úteis
+
+| Comando | O que ele faz |
+|--------|--------------|
+| `npm run start:dev` | Inicia o servidor com hot-reload |
+| `npm run build` | Compila o projeto TypeScript para JavaScript (pasta `/dist`) |
+| `npm run lint` | Verifica regras de código |
+| `docker-compose up -d` | Sobe o banco de dados |
+| `docker-compose down` | Para e remove os containers |
+
+---
+
+Desenvolvido com 💻 e ☕ pela equipe iService.

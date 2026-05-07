@@ -680,3 +680,4 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
     </td>
   </tr>
 </table>
+</table>
