@@ -253,3 +253,41 @@ Elementos únicos que atravessam a fronteira da aplicação:
 | US02 - Manter Perfil | (a definir) | Pendente |
 | US03 - Manter Serviço | 8 PF (Apenas transações) | Contabilizado |
 | **Total Não Ajustado (PFNA)** | **37 PF** | |
+
+
+## Contagem de Pontos de Função - US06 
+
+### 1. Funções de Dados (Arquivos)
+
+| Identificador | Nome | Tipo | Complexidade | Pontos de Função |
+| :--- | :--- | :--- | :--- | :--- |
+| **ALI01** | **Arquivo de Jobs (Serviços)** | ALI | Média | **10 PF** |
+
+*   **Justificativa:** O arquivo contém dados geográficos (PostGIS), status do ciclo de vida e chaves estrangeiras. A manutenção da integridade desses dados durante o processo de matchmaking eleva a complexidade para Média.
+
+---
+
+### 2. Funções de Transação
+
+| Identificador | Operação | Tipo | Descrição Técnica | Complexidade | Pontos de Função |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **CE01** | **Radar de Demandas** | CE | Consulta de Jobs 'SEARCHING' baseada no raio geográfico do profissional. | Média | **4 PF** |
+| **CE02** | **Visualizar Detalhes** | CE | Recuperação de descrição, categoria e distância específica de um Job. | Baixa | **3 PF** |
+| **EE01** | **Aceite de Serviço** | EE | Atualização do status para 'ACCEPTED' e vinculação do ID do profissional (Lógica de atomicidade). | Alta | **6 PF** |
+| **CE03** | **Visualizar Agenda** | CE | Listagem de serviços aceitos e pendentes vinculados ao profissional. | Baixa | **3 PF** |
+
+*   **Justificativa da EE01 (Alta):** O aceite não é uma simples alteração. Ele exige uma validação de concorrência no banco de dados para garantir que apenas um profissional assuma o Job, tratando falhas simultâneas.
+
+---
+
+### 3. Resumo da Contagem (US06)
+
+*   **Total de Pontos de Função de Dados:** 10 PF
+*   **Total de Pontos de Função de Transação:** 16 PF
+*   **Contagem Total US06:** **26 PF**
+
+---
+
+### 4. Impacto no Sistema iService
+
+A **US06** representa uma das partes mais densas do sistema, contribuindo com aproximadamente **18% a 20% do núcleo funcional do MVP** (estimado em 140 PF). O esforço de desenvolvimento aqui é maior devido à integração com o PostGIS e ao tratamento de race conditions no banco de dados PostgreSQL.
