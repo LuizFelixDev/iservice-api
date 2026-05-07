@@ -10,7 +10,6 @@ Documento construído a partir do **Modelo BSI - Doc 004 - Lista de User Stories
 | 26/03/2026 | 1.0.0   | Detalhamento dos User Stories US01, US02 e US03 e atribuição da equipe | Caio Lucas Lopes |
 
 ---
-
 ### User Story US01 - Manter Usuário (Autenticação)
 
 <table>
@@ -495,6 +494,39 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
   </tr>
 </table>
 
+## Especificação de Caso de Uso: US05 - Avaliar Serviço
+
+**Descrição:**
+> **Como** Cliente,
+> **Quero** avaliar o serviço prestado após a conclusão,
+> **Para** compartilhar minha experiência e ajudar outros usuários a escolherem profissionais de qualidade.
+
+**Regras de Negócio (RN):**
+* **RN01 - Restrição de Status:** A avaliação só pode ser realizada para Jobs com status `COMPLETED`.
+* **RN02 - Avaliação Única:** Cada cliente pode avaliar um Job apenas uma vez.
+* **RN03 - Integridade da Nota:** A avaliação deve conter uma nota entre 1 e 5 estrelas e um comentário opcional.
+* **RN04 - Associação Correta:** A avaliação deve estar vinculada ao `job_id` e ao `professional_id`.
+
+**Mensagens do Sistema:**
+* **MSG01 (Sucesso):** "Avaliação registrada com sucesso."
+* **MSG02 (Erro - RN01):** "Só é possível avaliar serviços concluídos."
+* **MSG03 (Erro - RN02):** "Este serviço já foi avaliado."
+* **MSG04 (Erro - RN03):** "A nota deve estar entre 1 e 5 estrelas."
+
+**Testes de Aceitação (TA):**
+* **TA05.01 - Avaliação com Sucesso:** *Dado que* o Job está com status COMPLETED, 
+  *Quando* o cliente envia uma avaliação válida, 
+  *Então* o sistema salva a avaliação e retorna MSG01.
+* **TA05.02 - Tentativa Antes da Conclusão:** *Dado que* o Job está com status ACCEPTED, 
+  *Quando* o cliente tenta avaliar, 
+  *Então* o sistema bloqueia e retorna MSG02.
+* **TA05.03 - Avaliação Duplicada:** *Dado que* o cliente já avaliou o Job, 
+  *Quando* tenta avaliar novamente, 
+  *Então* o sistema retorna MSG03.
+* **TA05.04 - Nota Inválida:** *Dado que* a nota enviada está fora do intervalo permitido, 
+  *Quando* o cliente envia a avaliação, 
+  *Então* o sistema retorna MSG04.
+
 ### User Story US06 - Manter Serviço na visão do profissional (Jobs e Matchmaking)
 
 <table>
@@ -569,135 +601,6 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
     </td>
   </tr>
 </table>
-
-Seguindo a estrutura solicitada e o nível de detalhamento técnico para o projeto **iService**, aqui está o detalhamento completo do **Caso de Uso UC01**, integrando a lógica de autenticação híbrida (Tradicional + OAuth 2.0).
-
----
-
-## 1. Identificação
-
-*   **Caso de Uso:** UC01 - Manter Usuário e Autenticação (Referente à US01)
-*   **Atores Principais:** Visitante (Usuário não logado)
-*   **Atores Secundários:** Provedor de Identidade Google (Google OAuth 2.0 API)
-*   **Resumo:** Este caso de uso descreve os passos para um visitante criar uma nova conta ou autenticar-se na plataforma iService, seja através de credenciais tradicionais (e-mail e senha) ou utilizando o Single Sign-On (SSO) de plataformas terceiras, como o Google.
-
----
-
-## 2. Pré-condições
-
-1.  O aplicativo mobile deve estar conectado à internet.
-2.  Para login via Google, o dispositivo do usuário deve ter os serviços do Google Play configurados ou permitir acesso ao navegador para o consentimento OAuth.
-
----
-
-## 3. Pós-condições
-
-*   **Sucesso:** O usuário é autenticado, a sessão é iniciada (Token JWT é armazenado localmente no dispositivo) e o sistema redireciona para a tela inicial (Radar ou Home). Caso seja o primeiro acesso via Google, a conta base e o perfil inicial são criados automaticamente.
-*   **Falha:** O sistema exibe uma mensagem de erro clara, nenhuma sessão é criada e o usuário permanece na tela de login/cadastro.
-
----
-
-## 4. Fluxos de Eventos
-
-### 4.1. Fluxo Principal 1: Cadastro e Login Tradicional (E-mail e Senha)
-1.  O Visitante acessa a tela inicial do aplicativo e seleciona "Cadastrar com E-mail".
-2.  O sistema exibe o formulário solicitando: E-mail e Senha.
-3.  O Visitante preenche os dados e submete o formulário.
-4.  O sistema valida o formato do e-mail e a força da senha (**RN01**).
-5.  O sistema verifica no banco de dados se o e-mail já existe.
-6.  O sistema criptografa a senha utilizando **Bcrypt** (**RN02**).
-7.  O sistema persiste o novo registro na entidade `User` e cria um `Profile` inicial em branco.
-8.  O sistema gera um Token JWT com o UUID do usuário no payload.
-9.  O sistema retorna o Token JWT para o Frontend.
-10. O caso de uso é encerrado com sucesso.
-
-### 4.2. Fluxo Principal 2: Login / Cadastro via Plataforma Terceira (Google SSO)
-1.  O Visitante acessa a tela inicial e seleciona "Continuar com o Google".
-2.  O aplicativo abre a interface nativa de consentimento do Google OAuth 2.0.
-3.  O Visitante seleciona sua conta Google e autoriza o compartilhamento de dados básicos (Perfil e E-mail).
-4.  O Provedor (Google) retorna um `id_token` assinado para o Frontend do iService.
-5.  O Frontend repassa esse `id_token` para o Backend.
-6.  O Backend valida criptograficamente o `id_token` contra os servidores da Google (garantindo que não foi forjado ou expirado).
-7.  O Backend extrai as informações do payload do Google: `email`, `name`, `picture` (foto de perfil) e `email_verified`.
-8.  O sistema verifica se já existe um usuário cadastrado com esse e-mail no banco de dados:
-    *   **Se NÃO existe (Novo Usuário):** O sistema cria automaticamente a conta `User` (com password nulo) e preenche o `Profile` inicial com o Nome e a Foto extraídos do Google.
-    *   **Se JÁ existe (Usuário Recorrente):** O sistema apenas recupera o UUID associado a este e-mail.
-9.  O sistema gera o Token JWT interno do iService com o UUID do usuário.
-10. O sistema retorna o Token JWT e os dados do perfil para o Frontend.
-11. O caso de uso é encerrado com sucesso.
-
-### 4.3. Fluxos Alternativos
-*   **FA01 - E-mail já cadastrado:** No passo 5 do fluxo 1, se o e-mail estiver em uso, o sistema aborta o cadastro e exibe a mensagem: "Este e-mail já está em uso. Deseja fazer login?".
-*   **FA02 - Credenciais Inválidas:** Se o visitante tentar fazer login com uma senha que não bate com o hash salvo, o sistema exibe "E-mail ou senha incorretos" (mantendo a ambiguidade por segurança).
-*   **FA03 - Mesclagem de Contas:** Se no passo 8 do Fluxo 2 o e-mail do Google já existir (criado via e-mail/senha), o sistema permite o login, vinculando a identidade Google ao cadastro existente.
-
-### 4.4. Fluxos de Exceção
-*   **FE01 - Falha de Comunicação OAuth:** Se os servidores da Google estiverem indisponíveis ou a validação falhar, o sistema interrompe o processo e informa: "Não foi possível conectar ao Google no momento".
-*   **FE02 - Permissão Negada:** Se o usuário fechar a tela do Google ou negar o consentimento, o fluxo é cancelado e o usuário retorna à tela de login.
-
----
-
-## 5. Regras de Negócio (RN)
-
-| ID | Regra | Descrição |
-| :--- | :--- | :--- |
-| **RN01** | **Validação de Entrada** | O e-mail deve seguir o padrão regex. A senha deve possuir no mínimo 8 caracteres. |
-| **RN02** | **Criptografia** | Proibido salvar senhas em texto claro. Utilizar algoritmo de hash seguro com salt (Ex: **Bcrypt**). |
-| **RN03** | **Ciclo de Vida JWT** | O Token deve ter validade definida (ex: 7 dias) e ser assinado com a chave secreta `JWT_SECRET`. |
-| **RN04** | **Senhas Sociais** | Contas criadas via Google possuem `password` nulo. O login tradicional é bloqueado para elas até que uma senha seja definida no perfil. |
-| **RN05** | **Audience Match** | O Backend só aceitará `id_tokens` cujo campo `aud` coincida com o *Client ID* do projeto no Google Cloud Console. |
-
----
-
-## 6. Mapeamento de Dados de Terceiros (Google OAuth)
-
-| Dado do Provedor | Campo no Backend (iService) | Entidade Destino |
-| :--- | :--- | :--- |
-| `payload.email` | `email` | `User` |
-| `payload.name` | `name` | `Profile` |
-| `payload.picture` | `avatar_url` | `Profile` |
-| `payload.sub` | `google_id` | `User` (opcional para vínculo) |
-
-Para a **US06 (Manter Serviço na Visão Profissional)**, a contagem de Pontos de Função (APF) foca na complexidade da lógica geoespacial e na criticidade da transação de aceite (concorrência).
-
-Abaixo está a contagem detalhada:
-
----
-
-## 1. Funções de Dados (Arquivos)
-
-| Identificador | Nome | Tipo | Complexidade | Pontos de Função |
-| :--- | :--- | :--- | :--- | :--- |
-| **ALI01** | **Arquivo de Jobs (Serviços)** | ALI | Média | **10 PF** |
-
-*   **Justificativa:** O arquivo contém dados geográficos (PostGIS), status do ciclo de vida e chaves estrangeiras. A manutenção da integridade desses dados durante o processo de matchmaking eleva a complexidade para Média.
-
----
-
-## 2. Funções de Transação
-
-| Identificador | Operação | Tipo | Descrição Técnica | Complexidade | Pontos de Função |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **CE01** | **Radar de Demandas** | CE | Consulta de Jobs 'SEARCHING' baseada no raio geográfico do profissional. | Média | **4 PF** |
-| **CE02** | **Visualizar Detalhes** | CE | Recuperação de descrição, categoria e distância específica de um Job. | Baixa | **3 PF** |
-| **EE01** | **Aceite de Serviço** | EE | Atualização do status para 'ACCEPTED' e vinculação do ID do profissional (Lógica de atomicidade). | Alta | **6 PF** |
-| **CE03** | **Visualizar Agenda** | CE | Listagem de serviços aceitos e pendentes vinculados ao profissional. | Baixa | **3 PF** |
-
-*   **Justificativa da EE01 (Alta):** O aceite não é uma simples alteração. Ele exige uma validação de concorrência no banco de dados para garantir que apenas um profissional assuma o Job, tratando falhas simultâneas.
-
----
-
-## 3. Resumo da Contagem (US06)
-
-*   **Total de Pontos de Função de Dados:** 10 PF
-*   **Total de Pontos de Função de Transação:** 16 PF
-*   **Contagem Total US06:** **26 PF**
-
----
-
-## 4. Impacto no Sistema iService
-
-A **US06** representa uma das partes mais densas do sistema, contribuindo com aproximadamente **18% a 20% do núcleo funcional do MVP** (estimado em 140 PF). O esforço de desenvolvimento aqui é maior devido à integração com o PostGIS e ao tratamento de race conditions no banco de dados PostgreSQL.
 
 ### User Story US07 - Concluir Serviço em Andamento
 
@@ -776,4 +679,5 @@ A **US06** representa uma das partes mais densas do sistema, contribuindo com ap
       </ul>
     </td>
   </tr>
+</table>
 </table>
