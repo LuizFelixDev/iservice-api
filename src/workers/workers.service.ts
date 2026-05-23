@@ -23,7 +23,7 @@ export class WorkersService {
   }
 
   findOne(id: number): Worker {
-    const worker = this.workers.find(w => w.id === id);
+    const worker = this.workers.find((w) => w.id === id);
 
     if (!worker) {
       throw new NotFoundException('Worker não encontrado');
@@ -40,7 +40,7 @@ export class WorkersService {
 
   remove(id: number) {
     this.findOne(id);
-    this.workers = this.workers.filter(w => w.id !== id);
+    this.workers = this.workers.filter((w) => w.id !== id);
     return { deleted: true };
   }
 }

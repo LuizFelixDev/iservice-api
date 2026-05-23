@@ -21,7 +21,8 @@ import { WorkersModule } from './workers/workers.module';
       useFactory: (configService: ConfigService) => {
         const isDev = configService.get<string>('NODE_ENV') === 'development';
         const syncOverride = configService.get<string>('DB_SYNCHRONIZE');
-        const shouldSynchronize = syncOverride === 'true' || (isDev && syncOverride === undefined);
+        const shouldSynchronize =
+          syncOverride === 'true' || (isDev && syncOverride === undefined);
 
         return {
           type: 'postgres',
