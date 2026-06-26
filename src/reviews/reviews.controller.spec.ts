@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReviewsController } from './reviews.controller';
 import { ReviewsService } from './reviews.service';
@@ -25,7 +26,7 @@ describe('ReviewsController', () => {
 
     controller = module.get<ReviewsController>(ReviewsController);
     service = module.get(ReviewsService);
-    
+
     jest.clearAllMocks();
   });
 
