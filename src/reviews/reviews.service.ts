@@ -85,7 +85,7 @@ export class ReviewsService {
 
     return {
       averageRating: Number(averageRating.toFixed(1)),
-      totalReviews: reviews.length, 
+      totalReviews: reviews.length,
       reviews: reviews.map((r) => ({
         id: r.id,
         rating: r.rating,

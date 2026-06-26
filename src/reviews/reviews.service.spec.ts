@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReviewsService } from './reviews.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -54,7 +55,7 @@ describe('ReviewsService', () => {
     service = module.get<ReviewsService>(ReviewsService);
     reviewRepository = module.get(getRepositoryToken(Review));
     jobRepository = module.get(getRepositoryToken(Job));
-    
+
     jest.clearAllMocks();
   });
 
@@ -147,7 +148,9 @@ describe('ReviewsService', () => {
 
     it('should throw ConflictException if review already exists', async () => {
       jobRepository.findOne.mockResolvedValue(mockJob);
-      reviewRepository.findOne.mockResolvedValue({ id: 'existing-review' } as any);
+      reviewRepository.findOne.mockResolvedValue({
+        id: 'existing-review',
+      } as any);
 
       await expect(
         service.createReview(createReviewDto, mockClient.id),
