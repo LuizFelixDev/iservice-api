@@ -45,6 +45,7 @@ import { UploadModule } from './upload/upload.module';
     JobsModule,
     WorkersModule,
     ReviewsModule,
+    UploadModule,
   ],
   providers: [
     {

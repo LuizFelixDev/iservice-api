@@ -85,9 +85,13 @@ export class User extends BaseEntity {
   @OneToMany(() => Job, (job) => job.professional)
   acceptedJobs: Job[];
 
-  @OneToMany(() => Certificate, (certificate) => certificate.user, { cascade: true })
+  @OneToMany(() => Certificate, (certificate) => certificate.user, {
+    cascade: true,
+  })
   certificates: Certificate[];
 
-  @OneToMany(() => PortfolioItem, (portfolioItem) => portfolioItem.user, { cascade: true })
+  @OneToMany(() => PortfolioItem, (portfolioItem) => portfolioItem.user, {
+    cascade: true,
+  })
   portfolioItems: PortfolioItem[];
 }

@@ -22,6 +22,7 @@ import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
 import { CreatePortfolioItemDto } from './dto/create-portfolio-item.dto';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
 import { Job, JobStatus } from '../jobs/entities/job.entity';
+import { IFile } from '../common/interfaces/file.interface';
 
 @Injectable()
 export class UsersService {
@@ -188,7 +189,9 @@ export class UsersService {
       },
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const highlights = user.profile?.highlights || {};
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     highlights.completedJobs = completedJobsCount;
 
     return {
@@ -200,6 +203,7 @@ export class UsersService {
       coverUrl: user.profile?.coverUrl || null,
       rating: reviewsStats.averageRating,
       reviewsCount: reviewsStats.totalReviews,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       highlights,
       certificates: user.certificates || [],
       portfolioItems: user.portfolioItems || [],
@@ -209,8 +213,8 @@ export class UsersService {
   async updatePortfolio(
     userId: string,
     dto: UpdatePortfolioDto,
-    avatarFile?: any,
-    coverFile?: any,
+    avatarFile?: IFile,
+    coverFile?: IFile,
   ) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -245,7 +249,7 @@ export class UsersService {
   async addPortfolioItem(
     userId: string,
     dto: CreatePortfolioItemDto,
-    image?: any,
+    image?: IFile,
   ) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
