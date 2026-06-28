@@ -1,5 +1,20 @@
-import { Controller, Patch, UseGuards, Body, Req, Get, Post, Param, UseInterceptors, UploadedFile, UploadedFiles } from '@nestjs/common';
-import { FileInterceptor, FileFieldsInterceptor } from '@nestjs/platform-express';
+import {
+  Controller,
+  Patch,
+  UseGuards,
+  Body,
+  Req,
+  Get,
+  Post,
+  Param,
+  UseInterceptors,
+  UploadedFile,
+  UploadedFiles,
+} from '@nestjs/common';
+import {
+  FileInterceptor,
+  FileFieldsInterceptor,
+} from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -7,6 +22,7 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
 import { CreatePortfolioItemDto } from './dto/create-portfolio-item.dto';
 import { CreateCertificateDto } from './dto/create-certificate.dto';
+import { IFile } from '../common/interfaces/file.interface';
 
 interface RequestWithUser {
   user: {
@@ -41,19 +57,26 @@ export class UsersController {
 
   @Patch('me/portfolio')
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileFieldsInterceptor([
-    { name: 'avatar', maxCount: 1 },
-    { name: 'cover', maxCount: 1 },
-  ]))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'avatar', maxCount: 1 },
+      { name: 'cover', maxCount: 1 },
+    ]),
+  )
   async updatePortfolio(
     @Req() req: RequestWithUser,
     @Body() updatePortfolioDto: UpdatePortfolioDto,
-    @UploadedFiles() files: { avatar?: any[], cover?: any[] },
+    @UploadedFiles() files: { avatar?: IFile[]; cover?: IFile[] },
   ) {
     const avatarFile = files?.avatar?.[0];
     const coverFile = files?.cover?.[0];
-    
-    return this.usersService.updatePortfolio(req.user.id, updatePortfolioDto, avatarFile, coverFile);
+
+    return this.usersService.updatePortfolio(
+      req.user.id,
+      updatePortfolioDto,
+      avatarFile,
+      coverFile,
+    );
   }
 
   @Post('me/portfolio/items')
@@ -62,9 +85,13 @@ export class UsersController {
   async addPortfolioItem(
     @Req() req: RequestWithUser,
     @Body() createPortfolioItemDto: CreatePortfolioItemDto,
-    @UploadedFile() image: any,
+    @UploadedFile() image: IFile,
   ) {
-    return this.usersService.addPortfolioItem(req.user.id, createPortfolioItemDto, image);
+    return this.usersService.addPortfolioItem(
+      req.user.id,
+      createPortfolioItemDto,
+      image,
+    );
   }
 
   @Post('me/certificates')
@@ -76,4 +103,3 @@ export class UsersController {
     return this.usersService.addCertificate(req.user.id, createCertificateDto);
   }
 }
-

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { IFile } from '../common/interfaces/file.interface';
 
 @Injectable()
 export class UploadService {
@@ -6,9 +7,9 @@ export class UploadService {
    * Faz o upload do arquivo para o serviço de cloud.
    * Mock: no momento retorna uma URL local ou dummy simulando o upload real.
    */
-  async uploadFile(file: any): Promise<string> {
+  async uploadFile(file: IFile): Promise<string> {
     if (!file) return '';
-    
+
     // Simulate an upload delay
     await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -17,5 +18,3 @@ export class UploadService {
     return `https://dummyimage.com/600x400/000/fff&text=${file.originalname?.replace(/[^a-zA-Z0-9]/g, '') || 'file'}_${randomId}`;
   }
 }
-
-
