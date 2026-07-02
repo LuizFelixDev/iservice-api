@@ -32,10 +32,7 @@ export class WorkersController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: UpdateWorkerDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateWorkerDto) {
     return this.workersService.update(id, body);
   }
 
