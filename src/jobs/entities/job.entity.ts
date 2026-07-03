@@ -14,20 +14,20 @@ export enum JobStatus {
 @Index(['location'], { spatial: true })
 export class Job extends BaseEntity {
   @Column({ type: 'text' })
-  description: string;
+  description!: string;
 
   @Column({ type: 'enum', enum: JobStatus, default: JobStatus.SEARCHING })
-  status: JobStatus;
+  status!: JobStatus;
 
   @Column({ type: 'geography', spatialFeatureType: 'Point', srid: 4326 })
-  location: {
+  location!: {
     type: 'Point';
     coordinates: [number, number];
   };
 
   @ManyToOne(() => User, (user) => user.requestedJobs, { nullable: false })
-  client: User;
+  client!: User;
 
   @ManyToOne(() => User, (user) => user.acceptedJobs, { nullable: true })
-  professional: User | null;
+  professional!: User | null;
 }

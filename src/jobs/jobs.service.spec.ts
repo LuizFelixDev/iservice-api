@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Test, TestingModule } from '@nestjs/testing';
 import { JobsService } from './jobs.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -28,6 +27,8 @@ describe('JobsService', () => {
     create: jest.fn(),
     save: jest.fn(),
     find: jest.fn(),
+    findOne: jest.fn(),
+    update: jest.fn(),
     createQueryBuilder: jest.fn().mockReturnValue(mockQueryBuilder),
   };
 
@@ -291,34 +292,38 @@ describe('JobsService', () => {
     const mockClientId = 'client-123';
     const mockProfessionalId = 'prof-123';
 
-    it('deve aceitar o job com sucesso', async () => {
+    it('deve aceitar o job com sucesso através de uma transação atômica', async () => {
       const mockJob = {
         id: mockJobId,
         status: JobStatus.SEARCHING,
         client: { id: mockClientId },
-        professional: null,
       };
+      
       const mockProfessionalUser = { id: mockProfessionalId, name: 'Pro' };
 
-      mockJobRepository.findOne = jest.fn().mockResolvedValue(mockJob);
-      mockUsersService.findById.mockResolvedValue(mockProfessionalUser);
-      mockJobRepository.save.mockResolvedValue({
+      const mockUpdatedJob = {
         ...mockJob,
         status: JobStatus.ACCEPTED,
         professional: mockProfessionalUser,
-      });
+      };
+
+      mockJobRepository.findOne
+        .mockResolvedValueOnce(mockJob) 
+        .mockResolvedValueOnce(mockUpdatedJob); 
+        
+      mockUsersService.findById.mockResolvedValue(mockProfessionalUser);
+      
+      mockJobRepository.update.mockResolvedValue({ affected: 1 });
 
       const result = await service.acceptJob(mockJobId, mockProfessionalId);
 
-      expect(mockJobRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockJobId },
-        relations: ['client', 'professional'],
-      });
-      expect(mockUsersService.findById).toHaveBeenCalledWith(
-        mockProfessionalId,
+      expect(mockJobRepository.update).toHaveBeenCalledWith(
+        { id: mockJobId, status: JobStatus.SEARCHING },
+        { status: JobStatus.ACCEPTED, professional: mockProfessionalUser }
       );
-      expect(result.status).toBe(JobStatus.ACCEPTED);
-      expect(result.professional).toEqual(mockProfessionalUser);
+      
+      expect(result!.status).toBe(JobStatus.ACCEPTED);
+      expect(result!.professional).toEqual(mockProfessionalUser);
     });
 
     it('deve lançar ConflictException se o cliente tentar aceitar o próprio job', async () => {
@@ -326,40 +331,28 @@ describe('JobsService', () => {
         id: mockJobId,
         status: JobStatus.SEARCHING,
         client: { id: mockClientId },
-        professional: null,
       };
 
-      mockJobRepository.findOne = jest.fn().mockResolvedValue(mockJob);
+      mockJobRepository.findOne.mockResolvedValue(mockJob);
 
       await expect(service.acceptJob(mockJobId, mockClientId)).rejects.toThrow(
         ConflictException,
       );
     });
 
-    it('deve lançar ConflictException se o job não estiver mais SEARCHING', async () => {
-      const mockJob = {
-        id: mockJobId,
-        status: JobStatus.CANCELED,
-        client: { id: mockClientId },
-        professional: null,
-      };
-
-      mockJobRepository.findOne = jest.fn().mockResolvedValue(mockJob);
-
-      await expect(
-        service.acceptJob(mockJobId, mockProfessionalId),
-      ).rejects.toThrow(ConflictException);
-    });
-
-    it('deve lançar ConflictException se o job já tiver sido aceito (concorrência)', async () => {
+    it('deve lançar ConflictException se o update atômico retornar zero affected rows (Concorrência)', async () => {
       const mockJob = {
         id: mockJobId,
         status: JobStatus.SEARCHING,
         client: { id: mockClientId },
-        professional: { id: 'outro-prof-123' },
       };
+      
+      const mockProfessionalUser = { id: mockProfessionalId, name: 'Pro' };
 
-      mockJobRepository.findOne = jest.fn().mockResolvedValue(mockJob);
+      mockJobRepository.findOne.mockResolvedValue(mockJob);
+      mockUsersService.findById.mockResolvedValue(mockProfessionalUser);
+      
+      mockJobRepository.update.mockResolvedValue({ affected: 0 });
 
       await expect(
         service.acceptJob(mockJobId, mockProfessionalId),
