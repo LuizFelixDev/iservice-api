@@ -2,6 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { RoleName } from '../roles/enums/role.enum';
+import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
+import { CreatePortfolioItemDto } from './dto/create-portfolio-item.dto';
+import { CreateCertificateDto } from './dto/create-certificate.dto';
+import { IFile } from '../common/interfaces/file.interface';
 
 /**
  * Testes de Unidade - US02: garante que o controller expõe as rotas de
@@ -9,7 +13,7 @@ import { RoleName } from '../roles/enums/role.enum';
  */
 describe('UsersController', () => {
   let controller: UsersController;
-  
+
   const usersService = {
     updateProfile: jest.fn(),
     switchRole: jest.fn(),
@@ -40,19 +44,19 @@ describe('UsersController', () => {
   describe('US02 - Manter Perfil', () => {
     it('PATCH /users/profile delega updateProfile (TA02.01)', async () => {
       usersService.updateProfile.mockResolvedValue({ message: 'ok' });
-  
+
       await controller.update(req, { bio: 'Eletricista' });
-  
+
       expect(usersService.updateProfile).toHaveBeenCalledWith('u1', {
         bio: 'Eletricista',
       });
     });
-  
+
     it('PATCH /users/me/role delega switchRole (TA02.02)', async () => {
       usersService.switchRole.mockResolvedValue({ message: 'ok' });
-  
+
       await controller.switchRole(req, { role: RoleName.PROFESSIONAL });
-  
+
       expect(usersService.switchRole).toHaveBeenCalledWith(
         'u1',
         RoleName.PROFESSIONAL,
@@ -79,17 +83,28 @@ describe('UsersController', () => {
     });
 
     it('PATCH /users/me/portfolio - atualiza dados do portfólio', async () => {
-      await controller.updatePortfolio(req, {} as any, {} as any);
+      await controller.updatePortfolio(
+        req,
+        {} as unknown as UpdatePortfolioDto,
+        {} as unknown as { avatar?: IFile[]; cover?: IFile[] },
+      );
       expect(usersService.updatePortfolio).toHaveBeenCalled();
     });
 
     it('POST /users/me/portfolio/items - adiciona item ao portfólio', async () => {
-      await controller.addPortfolioItem(req, {} as any, {} as any);
+      await controller.addPortfolioItem(
+        req,
+        {} as unknown as CreatePortfolioItemDto,
+        {} as unknown as IFile,
+      );
       expect(usersService.addPortfolioItem).toHaveBeenCalled();
     });
 
     it('POST /users/me/certificates - adiciona novo certificado', async () => {
-      await controller.addCertificate(req, {} as any);
+      await controller.addCertificate(
+        req,
+        {} as unknown as CreateCertificateDto,
+      );
       expect(usersService.addCertificate).toHaveBeenCalled();
     });
   });

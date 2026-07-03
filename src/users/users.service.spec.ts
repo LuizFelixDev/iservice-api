@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
@@ -12,7 +16,6 @@ import { Job } from '../jobs/entities/job.entity';
 import { Role } from '../roles/entities/role.entity';
 import { RoleName } from '../roles/enums/role.enum';
 import { ProfileMessages } from './users.messages';
-import * as bcrypt from 'bcrypt';
 
 // Mock do bcrypt para não precisarmos processar hashes reais nos testes
 jest.mock('bcrypt', () => ({
@@ -49,12 +52,31 @@ describe('UsersService - US02 (Manter Perfil)', () => {
       providers: [
         UsersService,
         { provide: getRepositoryToken(User), useValue: userRepository },
-        { provide: getRepositoryToken(Certificate), useValue: certificateRepository },
-        { provide: getRepositoryToken(PortfolioItem), useValue: portfolioItemRepository },
-        { provide: getRepositoryToken(Job), useValue: { count: jest.fn().mockResolvedValue(0) } },
+        {
+          provide: getRepositoryToken(Certificate),
+          useValue: certificateRepository,
+        },
+        {
+          provide: getRepositoryToken(PortfolioItem),
+          useValue: portfolioItemRepository,
+        },
+        {
+          provide: getRepositoryToken(Job),
+          useValue: { count: jest.fn().mockResolvedValue(0) },
+        },
         { provide: RolesService, useValue: rolesService },
-        { provide: UploadService, useValue: { uploadFile: jest.fn().mockResolvedValue('url-mock') } },
-        { provide: ReviewsService, useValue: { getReviewsByUser: jest.fn().mockResolvedValue({ averageRating: 0, totalReviews: 0 }) } },
+        {
+          provide: UploadService,
+          useValue: { uploadFile: jest.fn().mockResolvedValue('url-mock') },
+        },
+        {
+          provide: ReviewsService,
+          useValue: {
+            getReviewsByUser: jest
+              .fn()
+              .mockResolvedValue({ averageRating: 0, totalReviews: 0 }),
+          },
+        },
       ],
     }).compile();
 
@@ -155,9 +177,8 @@ describe('UsersService - US02 (Manter Perfil)', () => {
       // Não deve consultar/duplicar a role
       expect(rolesService.findByName).not.toHaveBeenCalled();
       expect(
-        result.user.roles.filter(
-          (r) => r === (RoleName.PROFESSIONAL as string),
-        ).length,
+        result.user.roles.filter((r) => r === (RoleName.PROFESSIONAL as string))
+          .length,
       ).toBe(1);
     });
 
@@ -186,32 +207,52 @@ describe('UsersService - US02 (Manter Perfil)', () => {
       it('deve criar um usuário com sucesso (Sucesso)', async () => {
         userRepository.findOne.mockResolvedValue(null);
         rolesService.findByName.mockResolvedValue(makeRole(RoleName.USER));
-        
+
         const mockUser = { id: 'novo_id', email: 'teste@teste.com' };
-        jest.spyOn(User, 'createLocal').mockReturnValue(mockUser as any);
+        jest
+          .spyOn(User, 'createLocal')
+          .mockReturnValue(mockUser as unknown as User);
         userRepository.save.mockResolvedValue(mockUser);
 
-        const result = await service.createLocalUser({ email: 'teste@teste.com', password: '123', firstName: 'A', lastName: 'B' });
+        const result = await service.createLocalUser({
+          email: 'teste@teste.com',
+          password: '123',
+          firstName: 'A',
+          lastName: 'B',
+        });
         expect(result.id).toBe('novo_id');
       });
 
       it('deve disparar erro se o e-mail já existir (Erro)', async () => {
         userRepository.findOne.mockResolvedValue({ id: 'existente' });
-        await expect(service.createLocalUser({ email: 'teste@teste.com', password: '123', firstName: 'A', lastName: 'B' }))
-          .rejects.toThrow(ConflictException);
+        await expect(
+          service.createLocalUser({
+            email: 'teste@teste.com',
+            password: '123',
+            firstName: 'A',
+            lastName: 'B',
+          }),
+        ).rejects.toThrow(ConflictException);
       });
     });
 
     describe('updatePortfolio', () => {
       it('deve atualizar o portfólio (Sucesso)', async () => {
-        userRepository.findOne.mockResolvedValue({ id: 'u1', firstName: 'A', lastName: 'B', profile: {} });
+        userRepository.findOne.mockResolvedValue({
+          id: 'u1',
+          firstName: 'A',
+          lastName: 'B',
+          profile: {},
+        });
         await service.updatePortfolio('u1', { roleTitle: 'Desenvolvedor' });
         expect(userRepository.save).toHaveBeenCalled();
       });
 
       it('deve disparar erro se o usuário não for achado (Erro)', async () => {
         userRepository.findOne.mockResolvedValue(null);
-        await expect(service.updatePortfolio('invalido', {})).rejects.toThrow(NotFoundException);
+        await expect(service.updatePortfolio('invalido', {})).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
 
@@ -221,7 +262,11 @@ describe('UsersService - US02 (Manter Perfil)', () => {
         portfolioItemRepository.create.mockReturnValue({ title: 'Projeto' });
         portfolioItemRepository.save.mockResolvedValue({ id: 'item1' });
 
-        await service.addPortfolioItem('u1', { title: 'Projeto', description: 'Desc', imageUrl: '' });
+        await service.addPortfolioItem('u1', {
+          title: 'Projeto',
+          description: 'Desc',
+          imageUrl: '',
+        });
         expect(portfolioItemRepository.save).toHaveBeenCalled();
       });
 
@@ -230,7 +275,11 @@ describe('UsersService - US02 (Manter Perfil)', () => {
         certificateRepository.create.mockReturnValue({ title: 'AWS' });
         certificateRepository.save.mockResolvedValue({ id: 'cert1' });
 
-        await service.addCertificate('u1', { title: 'AWS', description: 'Cloud', icon: 'aws' });
+        await service.addCertificate('u1', {
+          title: 'AWS',
+          description: 'Cloud',
+          icon: 'aws',
+        });
         expect(certificateRepository.save).toHaveBeenCalled();
       });
     });

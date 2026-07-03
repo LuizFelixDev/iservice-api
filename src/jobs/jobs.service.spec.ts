@@ -162,7 +162,10 @@ describe('JobsService', () => {
       });
       mockJobRepository.save.mockResolvedValue({ id: 'job-id', ...mockDto });
 
-      const result = await service.create(mockDto as any, mockUserId);
+      const result = await service.create(
+        mockDto as unknown as CreateJobDto,
+        mockUserId,
+      );
 
       expect(mockUsersService.findById).toHaveBeenCalledWith(mockUserId);
       expect(result).toHaveProperty('id');
@@ -298,7 +301,7 @@ describe('JobsService', () => {
         status: JobStatus.SEARCHING,
         client: { id: mockClientId },
       };
-      
+
       const mockProfessionalUser = { id: mockProfessionalId, name: 'Pro' };
 
       const mockUpdatedJob = {
@@ -308,20 +311,20 @@ describe('JobsService', () => {
       };
 
       mockJobRepository.findOne
-        .mockResolvedValueOnce(mockJob) 
-        .mockResolvedValueOnce(mockUpdatedJob); 
-        
+        .mockResolvedValueOnce(mockJob)
+        .mockResolvedValueOnce(mockUpdatedJob);
+
       mockUsersService.findById.mockResolvedValue(mockProfessionalUser);
-      
+
       mockJobRepository.update.mockResolvedValue({ affected: 1 });
 
       const result = await service.acceptJob(mockJobId, mockProfessionalId);
 
       expect(mockJobRepository.update).toHaveBeenCalledWith(
         { id: mockJobId, status: JobStatus.SEARCHING },
-        { status: JobStatus.ACCEPTED, professional: mockProfessionalUser }
+        { status: JobStatus.ACCEPTED, professional: mockProfessionalUser },
       );
-      
+
       expect(result!.status).toBe(JobStatus.ACCEPTED);
       expect(result!.professional).toEqual(mockProfessionalUser);
     });
@@ -346,12 +349,12 @@ describe('JobsService', () => {
         status: JobStatus.SEARCHING,
         client: { id: mockClientId },
       };
-      
+
       const mockProfessionalUser = { id: mockProfessionalId, name: 'Pro' };
 
       mockJobRepository.findOne.mockResolvedValue(mockJob);
       mockUsersService.findById.mockResolvedValue(mockProfessionalUser);
-      
+
       mockJobRepository.update.mockResolvedValue({ affected: 0 });
 
       await expect(
