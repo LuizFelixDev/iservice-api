@@ -8,6 +8,8 @@ import { RolesModule } from './roles/roles.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { JobsModule } from './jobs/jobs.module';
 import { WorkersModule } from './workers/workers.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -21,7 +23,8 @@ import { WorkersModule } from './workers/workers.module';
       useFactory: (configService: ConfigService) => {
         const isDev = configService.get<string>('NODE_ENV') === 'development';
         const syncOverride = configService.get<string>('DB_SYNCHRONIZE');
-        const shouldSynchronize = syncOverride === 'true' || (isDev && syncOverride === undefined);
+        const shouldSynchronize =
+          syncOverride === 'true' || (isDev && syncOverride === undefined);
 
         return {
           type: 'postgres',
@@ -41,6 +44,8 @@ import { WorkersModule } from './workers/workers.module';
     RolesModule,
     JobsModule,
     WorkersModule,
+    ReviewsModule,
+    UploadModule,
   ],
   providers: [
     {

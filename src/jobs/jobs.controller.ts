@@ -6,6 +6,8 @@ import {
   UseGuards,
   Req,
   Query,
+  Patch,
+  Param,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
@@ -48,5 +50,28 @@ export class JobsController {
       parseFloat(lng),
       radius,
     );
+  }
+
+  @Patch(':id/cancel')
+  async cancelJob(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.jobsService.cancelJob(id, req.user.id);
+  }
+
+  @Patch(':id/accept')
+  @Roles(RoleName.PROFESSIONAL)
+  async acceptJob(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.jobsService.acceptJob(id, req.user.id);
+  }
+
+  @Get('my-services')
+  @Roles(RoleName.PROFESSIONAL)
+  findMyServices(@Req() req: AuthRequest) {
+    return this.jobsService.findByProfessional(req.user.id);
+  }
+
+  @Patch(':id/complete')
+  @Roles(RoleName.PROFESSIONAL)
+  async completeJob(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.jobsService.completeJob(id, req.user.id);
   }
 }

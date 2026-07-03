@@ -231,6 +231,50 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
 
 <br>
 
+### Especificação de Caso de Uso: User Story US02 - Manter Perfil (Role e Contato)
+
+**Descrição:**
+> **Como** usuário autenticado,
+> **Quero** gerenciar meu perfil e alternar entre os tipos de conta (Cliente/Profissional),
+> **Para** atualizar minhas informações pessoais e atuar em diferentes papéis dentro da plataforma.
+
+---
+
+**Regras de Negócio (RN):**
+* **RN01 - Autenticação Obrigatória:** Apenas usuários autenticados podem acessar e modificar o perfil.
+* **RN02 - Alteração de Role:** O usuário pode alternar entre as roles `USER` e `PROFESSIONAL`.
+* **RN03 - Atualização de Dados Pessoais:** O usuário pode atualizar biografia e telefone de contato.
+* **RN04 - Persistência de Dados:** Todas as alterações devem ser persistidas no banco de dados imediatamente.
+* **RN05 - Validação de Telefone:** O telefone deve seguir um formato válido antes de ser salvo.
+* **RN06 - Reflexo Imediato de Permissões:** A alteração de role deve refletir imediatamente nas permissões do sistema.
+
+---
+
+**Mensagens do Sistema:**
+* **MSG01 (Sucesso - Atualização):** "Perfil atualizado com sucesso."
+* **MSG02 (Sucesso - Role):** "Tipo de conta alterado com sucesso."
+* **MSG03 (Erro - RN01):** "Usuário não autenticado."
+* **MSG04 (Erro - RN05):** "Telefone inválido."
+
+---
+
+**Testes de Aceitação (TA):**
+* **TA02.01 - Atualização de Perfil com Sucesso:** *Dado que* o usuário está autenticado,
+  *Quando* atualiza biografia e telefone com dados válidos,
+  *Então* o sistema salva as informações e retorna MSG01.
+
+* **TA02.02 - Alteração de Role com Sucesso:** *Dado que* o usuário está autenticado,
+  *Quando* alterna entre USER e PROFESSIONAL,
+  *Então* o sistema atualiza a role e reflete as permissões imediatamente, retornando MSG02.
+
+* **TA02.03 - Acesso Não Autenticado:** *Dado que* o usuário não está autenticado,
+  *Quando* tenta acessar ou alterar o perfil,
+  *Então* o sistema bloqueia a operação e retorna MSG03.
+
+* **TA02.04 - Telefone Inválido:** *Dado que* o usuário informa um telefone em formato inválido,
+  *Quando* tenta salvar o perfil,
+  *Então* o sistema rejeita a atualização e retorna MSG04.
+
 ### User Story US03 - Manter Serviço na visão do cliente (Jobs e Matchmaking)
 
 <table>
@@ -315,6 +359,27 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
   </tr>
 </table>
 
+### Detalhamento BDD - US03
+
+**Cenário 1: Criação de solicitação com localização válida**
+* **Dado** que o cliente está autenticado no aplicativo
+* **E** informa uma descrição de serviço e permite o acesso ao seu GPS (latitude e longitude)
+* **Quando** o cliente confirma a solicitação
+* **Então** o sistema deve salvar os dados utilizando um tipo geográfico (Point - PostGIS)
+* **E** o status da solicitação deve ser iniciado como "SEARCHING".
+
+**Cenário 2: Visualização do histórico do cliente**
+* **Dado** que o cliente possui solicitações cadastradas
+* **Quando** ele acessa a tela de suas solicitações
+* **Então** o sistema deve exibir apenas as solicitações pertencentes a ele
+* **E** a lista deve estar ordenada da mais recente para a mais antiga (Data de Criação DESC).
+
+**Cenário 3: Acompanhamento de mudança de status**
+* **Dado** que o cliente possui uma solicitação em status "SEARCHING"
+* **Quando** um profissional próximo aceita o serviço
+* **Então** o status da solicitação deve ser atualizado para "ACCEPTED" na visão do cliente
+* **E** o cliente deve conseguir visualizar a mudança no painel.
+
 ### User Story US04 - Cancelar Solicitação de Serviço
 
 <table>
@@ -393,6 +458,230 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
     </td>
   </tr>
 </table>
+
+<br>
+
+# Especificação de Caso de Uso: UC04 - Cancelar Solicitação de Serviço
+
+---
+
+## 1. Identificação
+
+- **Caso de Uso:** UC04 - Cancelar Solicitação de Serviço (Referente à US04)
+- **Atores Principais:** Cliente, Profissional
+- **Atores Secundários:** Sistema de Autenticação JWT
+- **Resumo:**  
+Este caso de uso descreve o processo de cancelamento de um serviço (`Job`) ainda não concluído na plataforma iService. O cancelamento pode ser realizado tanto pelo cliente que criou a solicitação quanto pelo profissional que aceitou a demanda, respeitando as regras de permissão e status definidas pelo sistema.
+
+---
+
+## 2. Pré-condições
+
+- O usuário deve estar autenticado na plataforma através de um Token JWT válido.
+- O `Job` deve existir no banco de dados.
+- O `Job` deve estar com status `SEARCHING` ou `ACCEPTED`.
+- O usuário autenticado deve possuir vínculo com o serviço:
+  - Ser o `client_id` do Job; ou
+  - Ser o `professional_id` associado ao Job.
+
+---
+
+## 3. Pós-condições
+
+### Sucesso (Cancelamento pelo Cliente)
+- O status do Job é atualizado para `CANCELED`.
+- O serviço deixa de aparecer no radar e em listagens ativas.
+- O sistema retorna mensagem de sucesso.
+
+### Sucesso (Cancelamento pelo Profissional)
+- O status do Job retorna para `SEARCHING`.
+- O campo `professional_id` é definido como `null`.
+- O serviço volta a ficar disponível no radar para outros profissionais.
+
+### Falha
+- Nenhuma alteração é persistida no banco de dados.
+- O sistema retorna mensagem de erro apropriada.
+
+---
+
+# 4. Fluxos de Eventos
+
+## 4.1. Fluxo Principal 1: Cancelamento realizado pelo Cliente
+
+1. O Cliente acessa os detalhes de um serviço ativo.
+2. O sistema exibe a opção “Cancelar Serviço”.
+3. O Cliente confirma a ação de cancelamento.
+4. O Frontend envia a requisição autenticada contendo o `job_id`.
+5. O Backend valida o Token JWT e identifica o usuário autenticado.
+6. O sistema recupera o Job correspondente no banco de dados.
+7. O sistema valida se:
+   - O status do Job é `SEARCHING` ou `ACCEPTED`;
+   - O usuário autenticado é o proprietário (`client_id`) do Job.
+8. O sistema altera o status do Job para `CANCELED`.
+9. O sistema persiste a alteração no banco de dados.
+10. O sistema retorna a mensagem:
+    - `"Serviço cancelado com sucesso."`
+11. O caso de uso é encerrado com sucesso.
+
+---
+
+## 4.2. Fluxo Principal 2: Cancelamento realizado pelo Profissional
+
+1. O Profissional acessa os detalhes de um serviço aceito.
+2. O sistema exibe a opção “Cancelar Participação”.
+3. O Profissional confirma a ação.
+4. O Frontend envia a requisição autenticada contendo o `job_id`.
+5. O Backend valida o Token JWT.
+6. O sistema recupera o Job correspondente.
+7. O sistema valida se:
+   - O status atual é `ACCEPTED`;
+   - O usuário autenticado corresponde ao `professional_id`.
+8. O sistema remove o vínculo do profissional:
+   - `professional_id = null`
+9. O sistema altera o status do Job para `SEARCHING`.
+10. O sistema persiste as alterações no banco.
+11. O sistema retorna a mensagem:
+    - `"Serviço cancelado com sucesso."`
+12. O Job volta a aparecer no radar de outros profissionais.
+13. O caso de uso é encerrado com sucesso.
+
+---
+
+## 4.3. Fluxos Alternativos
+
+### FA01 - Tentativa de Cancelamento de Serviço Finalizado
+
+- No passo 7 dos Fluxos Principais, caso o Job esteja com status `COMPLETED`, o sistema bloqueia a operação e retorna:
+  - `"Não é possível cancelar um serviço que já foi finalizado."`
+
+---
+
+### FA02 - Serviço Já Cancelado
+
+- Caso o Job já possua status `CANCELED`, o sistema impede nova alteração e informa:
+  - `"Este serviço já foi cancelado."`
+
+---
+
+### FA03 - Usuário sem Permissão
+
+- Caso o usuário autenticado não seja:
+  - O cliente dono do Job; nem
+  - O profissional associado;
+
+o sistema retorna:
+- `"Você não tem permissão para alterar o status deste serviço."`
+
+---
+
+## 4.4. Fluxos de Exceção
+
+### FE01 - Job Não Encontrado
+
+- Caso o `job_id` informado não exista no banco de dados:
+  - O sistema retorna erro `404 - Serviço não encontrado`.
+
+---
+
+### FE02 - Token JWT Inválido ou Expirado
+
+- Caso o Token JWT esteja inválido, ausente ou expirado:
+  - O sistema retorna erro `401 - Não autenticado`.
+
+---
+
+### FE03 - Falha de Persistência no Banco
+
+- Caso ocorra falha ao salvar as alterações:
+  - O sistema realiza rollback da transação.
+  - O sistema retorna:
+    - `"Não foi possível cancelar o serviço no momento. Tente novamente."`
+
+---
+
+# 5. Regras de Negócio (RN)
+
+| ID | Regra | Descrição |
+| :--- | :--- | :--- |
+| **RN01** | Restrição de Status | O sistema só permite cancelamento se o Job estiver em `SEARCHING` ou `ACCEPTED`. |
+| **RN02** | Permissão de Propriedade | Apenas o Cliente dono do Job ou o Profissional associado podem cancelar. |
+| **RN03** | Retorno ao Radar | Quando o Profissional cancela, o Job retorna para `SEARCHING` e `professional_id` volta para `null`. |
+| **RN04** | Integridade de Histórico | O sistema deve manter registro da alteração de status para auditoria e rastreabilidade. |
+| **RN05** | Autenticação Obrigatória | Toda operação de cancelamento exige Token JWT válido. |
+
+---
+
+# 6. Modelo de Dados Impactado
+
+## Entidade `Job`
+
+| Campo | Tipo | Impacto |
+| :--- | :--- | :--- |
+| `id` | UUID | Identificador único do serviço |
+| `client_id` | UUID | Identifica o cliente proprietário |
+| `professional_id` | UUID (Nullable) | Pode ser removido no cancelamento do profissional |
+| `status` | ENUM | Atualizado para `CANCELED` ou `SEARCHING` |
+| `updated_at` | Timestamp | Atualizado automaticamente após alteração |
+
+---
+
+# 7. Mensagens do Sistema
+
+| ID | Tipo | Mensagem |
+| :--- | :--- | :--- |
+| **MSG01** | Sucesso | "Serviço cancelado com sucesso." |
+| **MSG02** | Erro RN01 | "Não é possível cancelar um serviço que já foi finalizado." |
+| **MSG03** | Erro RN02 | "Você não tem permissão para alterar o status deste serviço." |
+| **MSG04** | Erro | "Este serviço já foi cancelado." |
+| **MSG05** | Erro | "Serviço não encontrado." |
+| **MSG06** | Erro | "Não autenticado." |
+
+---
+
+# 8. Testes de Aceitação (TA)
+
+## TA04.01 - Cancelamento pelo Cliente
+
+**Dado que** o cliente é proprietário do Job X com status `ACCEPTED`  
+**Quando** ele solicita o cancelamento  
+**Então** o status deve mudar para `CANCELED`  
+**E** a mensagem MSG01 deve ser exibida.
+
+---
+
+## TA04.02 - Cancelamento pelo Profissional
+
+**Dado que** o profissional está associado ao Job X  
+**Quando** ele cancela sua participação  
+**Então** o `professional_id` deve ficar `null`  
+**E** o status deve retornar para `SEARCHING`.
+
+---
+
+## TA04.03 - Tentativa sem Permissão
+
+**Dado que** o usuário autenticado não é dono nem profissional do Job  
+**Quando** ele tenta cancelar o serviço  
+**Então** o sistema deve bloquear a operação  
+**E** retornar a MSG03.
+
+---
+
+## TA04.04 - Tentativa de Cancelar Serviço Finalizado
+
+**Dado que** o Job possui status `COMPLETED`  
+**Quando** o usuário tenta cancelar  
+**Então** o sistema deve impedir a alteração  
+**E** retornar a MSG02.
+
+---
+
+## TA04.05 - Tentativa com Token Inválido
+
+**Dado que** a requisição possui Token JWT inválido ou expirado  
+**Quando** o usuário envia a solicitação  
+**Então** o sistema deve retornar erro `401`.
+
 
 ### User Story US05 - Avaliar Serviço e Profissional
 
@@ -494,11 +783,44 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
   </tr>
 </table>
 
+## Especificação de Caso de Uso: US05 - Avaliar Serviço
+
+**Descrição:**
+> **Como** Cliente,
+> **Quero** avaliar o serviço prestado após a conclusão,
+> **Para** compartilhar minha experiência e ajudar outros usuários a escolherem profissionais de qualidade.
+
+**Regras de Negócio (RN):**
+* **RN01 - Restrição de Status:** A avaliação só pode ser realizada para Jobs com status `COMPLETED`.
+* **RN02 - Avaliação Única:** Cada cliente pode avaliar um Job apenas uma vez.
+* **RN03 - Integridade da Nota:** A avaliação deve conter uma nota entre 1 e 5 estrelas e um comentário opcional.
+* **RN04 - Associação Correta:** A avaliação deve estar vinculada ao `job_id` e ao `professional_id`.
+
+**Mensagens do Sistema:**
+* **MSG01 (Sucesso):** "Avaliação registrada com sucesso."
+* **MSG02 (Erro - RN01):** "Só é possível avaliar serviços concluídos."
+* **MSG03 (Erro - RN02):** "Este serviço já foi avaliado."
+* **MSG04 (Erro - RN03):** "A nota deve estar entre 1 e 5 estrelas."
+
+**Testes de Aceitação (TA):**
+* **TA05.01 - Avaliação com Sucesso:** *Dado que* o Job está com status COMPLETED, 
+  *Quando* o cliente envia uma avaliação válida, 
+  *Então* o sistema salva a avaliação e retorna MSG01.
+* **TA05.02 - Tentativa Antes da Conclusão:** *Dado que* o Job está com status ACCEPTED, 
+  *Quando* o cliente tenta avaliar, 
+  *Então* o sistema bloqueia e retorna MSG02.
+* **TA05.03 - Avaliação Duplicada:** *Dado que* o cliente já avaliou o Job, 
+  *Quando* tenta avaliar novamente, 
+  *Então* o sistema retorna MSG03.
+* **TA05.04 - Nota Inválida:** *Dado que* a nota enviada está fora do intervalo permitido, 
+  *Quando* o cliente envia a avaliação, 
+  *Então* o sistema retorna MSG04.
+
 ### User Story US06 - Manter Serviço na visão do profissional (Jobs e Matchmaking)
 
 <table>
   <tr>
-    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US04</th>
+    <th colspan="2" style="text-align:left;background:#e0e0e0;padding:8px;">📌 User Story - US06</th>
   </tr>
   <tr>
     <td style="width:25%;padding:6px;"><strong>Título</strong></td>
@@ -518,6 +840,7 @@ Os dados providos pela API de autenticação do Google serão mapeados para o ba
     <td style="padding:6px;"><strong>Requisitos Relacionados</strong></td>
     <td style="padding:6px;">RF04.01, RF04.02, RF04.03</td>
   </tr>
+
   <tr>
     <td style="padding:6px;"><strong>Critérios de Aceitação</strong></td>
     <td style="padding:6px;">
@@ -657,47 +980,6 @@ Seguindo a estrutura solicitada e o nível de detalhamento técnico para o proje
 | `payload.picture` | `avatar_url` | `Profile` |
 | `payload.sub` | `google_id` | `User` (opcional para vínculo) |
 
-Para a **US06 (Manter Serviço na Visão Profissional)**, a contagem de Pontos de Função (APF) foca na complexidade da lógica geoespacial e na criticidade da transação de aceite (concorrência).
-
-Abaixo está a contagem detalhada:
-
----
-
-## 1. Funções de Dados (Arquivos)
-
-| Identificador | Nome | Tipo | Complexidade | Pontos de Função |
-| :--- | :--- | :--- | :--- | :--- |
-| **ALI01** | **Arquivo de Jobs (Serviços)** | ALI | Média | **10 PF** |
-
-*   **Justificativa:** O arquivo contém dados geográficos (PostGIS), status do ciclo de vida e chaves estrangeiras. A manutenção da integridade desses dados durante o processo de matchmaking eleva a complexidade para Média.
-
----
-
-## 2. Funções de Transação
-
-| Identificador | Operação | Tipo | Descrição Técnica | Complexidade | Pontos de Função |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **CE01** | **Radar de Demandas** | CE | Consulta de Jobs 'SEARCHING' baseada no raio geográfico do profissional. | Média | **4 PF** |
-| **CE02** | **Visualizar Detalhes** | CE | Recuperação de descrição, categoria e distância específica de um Job. | Baixa | **3 PF** |
-| **EE01** | **Aceite de Serviço** | EE | Atualização do status para 'ACCEPTED' e vinculação do ID do profissional (Lógica de atomicidade). | Alta | **6 PF** |
-| **CE03** | **Visualizar Agenda** | CE | Listagem de serviços aceitos e pendentes vinculados ao profissional. | Baixa | **3 PF** |
-
-*   **Justificativa da EE01 (Alta):** O aceite não é uma simples alteração. Ele exige uma validação de concorrência no banco de dados para garantir que apenas um profissional assuma o Job, tratando falhas simultâneas.
-
----
-
-## 3. Resumo da Contagem (US06)
-
-*   **Total de Pontos de Função de Dados:** 10 PF
-*   **Total de Pontos de Função de Transação:** 16 PF
-*   **Contagem Total US06:** **26 PF**
-
----
-
-## 4. Impacto no Sistema iService
-
-A **US06** representa uma das partes mais densas do sistema, contribuindo com aproximadamente **18% a 20% do núcleo funcional do MVP** (estimado em 140 PF). O esforço de desenvolvimento aqui é maior devido à integração com o PostGIS e ao tratamento de race conditions no banco de dados PostgreSQL.
-
 ### User Story US07 - Concluir Serviço em Andamento
 
 <table>
@@ -775,4 +1057,5 @@ A **US06** representa uma das partes mais densas do sistema, contribuindo com ap
       </ul>
     </td>
   </tr>
+</table>
 </table>
