@@ -7,6 +7,7 @@ import {
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
+import { Profile } from './entities/profile.entity';
 import { Certificate } from './entities/certificate.entity';
 import { PortfolioItem } from './entities/portfolio-item.entity';
 import { RolesService } from '../roles/roles.service';
@@ -188,6 +189,31 @@ describe('UsersService - US02 (Manter Perfil)', () => {
 
       await expect(
         service.switchRole('inexistente', RoleName.PROFESSIONAL),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
+  describe('updateStatus', () => {
+    it('deve atualizar o status isOnline com sucesso', async () => {
+      const user: Partial<User> = {
+        id: 'u1',
+        profile: { isOnline: false } as Profile,
+      };
+      userRepository.findOne.mockResolvedValue(user);
+
+      const result = await service.updateStatus('u1', true);
+
+      expect(result.message).toBe('Status atualizado com sucesso');
+      expect(result.isOnline).toBe(true);
+      expect(user.profile?.isOnline).toBe(true);
+      expect(userRepository.save).toHaveBeenCalledTimes(1);
+    });
+
+    it('deve lançar NotFoundException se o usuário não for encontrado', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.updateStatus('inexistente', true),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
