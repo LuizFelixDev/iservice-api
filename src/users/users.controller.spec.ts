@@ -22,6 +22,7 @@ describe('UsersController', () => {
     updatePortfolio: jest.fn(),
     addPortfolioItem: jest.fn(),
     addCertificate: jest.fn(),
+    updateStatus: jest.fn(),
   };
 
   const req = { user: { id: 'u1', email: 'ismael@teste.com' } };
@@ -61,6 +62,14 @@ describe('UsersController', () => {
         'u1',
         RoleName.PROFESSIONAL,
       );
+    });
+
+    it('PATCH /users/me/status delega updateStatus', async () => {
+      usersService.updateStatus.mockResolvedValue({ message: 'ok', isOnline: true });
+
+      await controller.updateStatus(req, { isOnline: true });
+
+      expect(usersService.updateStatus).toHaveBeenCalledWith('u1', true);
     });
   });
 
