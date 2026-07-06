@@ -6,8 +6,9 @@ import {
 } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
+import { User, Provider } from './entities/user.entity';
 import { Profile } from './entities/profile.entity';
+import * as bcrypt from 'bcrypt';
 import { Certificate } from './entities/certificate.entity';
 import { PortfolioItem } from './entities/portfolio-item.entity';
 import { RolesService } from '../roles/roles.service';
@@ -301,6 +302,120 @@ describe('UsersService - US02 (Manter Perfil)', () => {
           icon: 'aws',
         });
         expect(certificateRepository.save).toHaveBeenCalled();
+      });
+    });
+
+    describe('buscarOuCriarSocial', () => {
+      it('deve retornar o usuário existente se o email já estiver cadastrado', async () => {
+        const mockUser = { id: 'u1', email: 'social@teste.com' };
+        userRepository.findOne.mockResolvedValue(mockUser);
+        const result = await service.buscarOuCriarSocial({
+          email: 'social@teste.com',
+          firstName: 'Social',
+          lastName: 'Test',
+          provider: Provider.GOOGLE,
+        });
+        expect(result).toEqual(mockUser);
+        expect(userRepository.create).not.toHaveBeenCalled();
+      });
+
+      it('deve criar um novo usuário se o email não estiver cadastrado', async () => {
+        userRepository.findOne.mockResolvedValue(null);
+        rolesService.findByName.mockResolvedValue(makeRole(RoleName.USER));
+        const mockNewUser = { id: 'u2', email: 'novo@social.com' };
+        userRepository.create.mockReturnValue(mockNewUser);
+        userRepository.save.mockResolvedValue(mockNewUser);
+
+        const result = await service.buscarOuCriarSocial({
+          email: 'novo@social.com',
+          firstName: 'Novo',
+          lastName: 'Social',
+          provider: Provider.GOOGLE,
+        });
+        expect(result).toEqual(mockNewUser);
+        expect(userRepository.create).toHaveBeenCalled();
+        expect(userRepository.save).toHaveBeenCalled();
+      });
+    });
+
+    describe('validateUser', () => {
+      it('deve retornar o usuário validado sem a senha se a senha bater', async () => {
+        const password = 'password123';
+        const hashedPassword = await bcrypt.hash(password, 1);
+        const mockUser = { id: 'u1', email: 'test@test.com', password: hashedPassword };
+        userRepository.findOne.mockResolvedValue(mockUser);
+
+        const result = await service.validateUser('test@test.com', password);
+        expect(result).toEqual({ id: 'u1', email: 'test@test.com' });
+        expect(result?.password).toBeUndefined();
+      });
+
+      it('deve retornar null se a senha estiver incorreta', async () => {
+        const password = 'password123';
+        const hashedPassword = await bcrypt.hash(password, 1);
+        const mockUser = { id: 'u1', email: 'test@test.com', password: hashedPassword };
+        userRepository.findOne.mockResolvedValue(mockUser);
+
+        const result = await service.validateUser('test@test.com', 'wrongpassword');
+        expect(result).toBeNull();
+      });
+
+      it('deve retornar null se o usuário não for encontrado', async () => {
+        userRepository.findOne.mockResolvedValue(null);
+        const result = await service.validateUser('notfound@test.com', 'password');
+        expect(result).toBeNull();
+      });
+    });
+
+    describe('findById', () => {
+      it('deve retornar o usuário se existir', async () => {
+        const mockUser = { id: 'u1' };
+        userRepository.findOne.mockResolvedValue(mockUser);
+        const result = await service.findById('u1');
+        expect(result).toEqual(mockUser);
+      });
+
+      it('deve lançar NotFoundException se o usuário não for encontrado', async () => {
+        userRepository.findOne.mockResolvedValue(null);
+        await expect(service.findById('notFound')).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    describe('findMe', () => {
+      it('deve retornar os dados formatados do usuário logado', async () => {
+        const mockUser = { id: 'u1', firstName: 'Test', lastName: 'User' };
+        userRepository.findOne.mockResolvedValue(mockUser);
+        const result = await service.findMe('u1');
+        expect(result.id).toBe('u1');
+        expect(result.firstName).toBe('Test');
+      });
+
+      it('deve lançar NotFoundException se o usuário não for encontrado', async () => {
+        userRepository.findOne.mockResolvedValue(null);
+        await expect(service.findMe('notFound')).rejects.toThrow(NotFoundException);
+      });
+    });
+
+    describe('getPortfolio', () => {
+      it('deve retornar o portfolio do usuário', async () => {
+        const mockUser = {
+          id: 'u1',
+          firstName: 'Prof',
+          lastName: 'User',
+          profile: { bio: 'Dev', roleTitle: 'Engineer', photoUrl: 'foto.jpg', highlights: {} },
+          certificates: [],
+          portfolioItems: [],
+        };
+        userRepository.findOne.mockResolvedValue(mockUser);
+        const result = await service.getPortfolio('u1');
+        expect(result.id).toBe('u1');
+        expect(result.name).toBe('Prof User');
+        expect(result.roleTitle).toBe('Engineer');
+      });
+
+      it('deve lançar NotFoundException se o usuário não existir ao buscar portfolio', async () => {
+        userRepository.findOne.mockResolvedValue(null);
+        await expect(service.getPortfolio('notFound')).rejects.toThrow(NotFoundException);
       });
     });
   });
