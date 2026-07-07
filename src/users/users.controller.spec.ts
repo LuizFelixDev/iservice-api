@@ -23,6 +23,7 @@ describe('UsersController', () => {
     addPortfolioItem: jest.fn(),
     addCertificate: jest.fn(),
     updateStatus: jest.fn(),
+    incrementProfileViews: jest.fn(),
   };
 
   const req = { user: { id: 'u1', email: 'ismael@teste.com' } };
@@ -65,7 +66,10 @@ describe('UsersController', () => {
     });
 
     it('PATCH /users/me/status delega updateStatus', async () => {
-      usersService.updateStatus.mockResolvedValue({ message: 'ok', isOnline: true });
+      usersService.updateStatus.mockResolvedValue({
+        message: 'ok',
+        isOnline: true,
+      });
 
       await controller.updateStatus(req, { isOnline: true });
 
@@ -115,6 +119,22 @@ describe('UsersController', () => {
         {} as unknown as CreateCertificateDto,
       );
       expect(usersService.addCertificate).toHaveBeenCalled();
+    });
+  });
+
+  it('POST /users/:id/view - incrementa a visualização do perfil profissional', async () => {
+    usersService.incrementProfileViews.mockResolvedValue({
+      message: 'Visualização registrada com sucesso.',
+      views: 4,
+    });
+
+    const result = await controller.incrementProfileViews('u2');
+
+    expect(usersService.incrementProfileViews).toHaveBeenCalledWith('u2');
+
+    expect(result).toEqual({
+      message: 'Visualização registrada com sucesso.',
+      views: 4,
     });
   });
 });
