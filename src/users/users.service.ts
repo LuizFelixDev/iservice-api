@@ -383,4 +383,20 @@ export class UsersService {
 
     return newCertificate;
   }
+
+  async incrementProfileViews(userId: string) {
+    const user = await this.findById(userId);
+
+    if (!user.profile) {
+      throw new NotFoundException('Perfil não encontrado');
+    }
+
+    user.profile.views = (user.profile.views ?? 0) + 1;
+    await this.userRepository.save(user);
+
+    return {
+      message: 'Visualização registrada com sucesso.',
+      views: user.profile.views,
+    };
+  }
 }

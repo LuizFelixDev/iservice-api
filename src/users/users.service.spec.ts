@@ -444,4 +444,68 @@ describe('UsersService - US02 (Manter Perfil)', () => {
       });
     });
   });
+
+  describe('incrementProfileViews', () => {
+    it('deve incrementar o contador de visualizações', async () => {
+      const user: Partial<User> = {
+        id: 'u1',
+        profile: {
+          views: 3,
+        } as Profile,
+      };
+
+      userRepository.findOne.mockResolvedValue(user);
+
+      const result = await service.incrementProfileViews('u1');
+
+      expect(user.profile?.views).toBe(4);
+      expect(userRepository.save).toHaveBeenCalledWith(user);
+
+      expect(result).toEqual({
+        message: 'Visualização registrada com sucesso.',
+        views: 4,
+      });
+    });
+
+    it('deve iniciar o contador com 1 quando views for null', async () => {
+      const user: Partial<User> = {
+        id: 'u1',
+        profile: {
+          views: null,
+        } as unknown as Profile,
+      };
+
+      userRepository.findOne.mockResolvedValue(user);
+
+      const result = await service.incrementProfileViews('u1');
+
+      expect(result.views).toBe(1);
+      expect(userRepository.save).toHaveBeenCalledWith(user);
+    });
+
+    it('deve lançar NotFoundException quando o perfil não existir', async () => {
+      const user: Partial<User> = {
+        id: 'u1',
+        profile: undefined,
+      };
+
+      userRepository.findOne.mockResolvedValue(user);
+
+      await expect(service.incrementProfileViews('u1')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+
+      expect(userRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('deve lançar NotFoundException quando o usuário não existir', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+
+      await expect(
+        service.incrementProfileViews('inexistente'),
+      ).rejects.toBeInstanceOf(NotFoundException);
+
+      expect(userRepository.save).not.toHaveBeenCalled();
+    });
+  });
 });

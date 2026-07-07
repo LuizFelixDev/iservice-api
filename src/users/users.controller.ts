@@ -122,4 +122,9 @@ export class UsersController {
   ) {
     return this.usersService.addCertificate(req.user.id, createCertificateDto);
   }
+
+  @Post(':id/view')
+  async incrementProfileViews(@Param('id') id: string) {
+    return this.usersService.incrementProfileViews(id);
+  }
 }

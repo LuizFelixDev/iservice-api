@@ -42,6 +42,9 @@ export class Profile {
   @Column({ type: 'boolean', default: false })
   isOnline: boolean;
 
+  @Column({ default: 0 })
+  views: number;
+
   @Index({ spatial: true })
   @Column({
     type: 'geography',
