@@ -12,6 +12,7 @@ import { Profile } from './profile.entity';
 import { Job } from '../../jobs/entities/job.entity';
 import { Certificate } from './certificate.entity';
 import { PortfolioItem } from './portfolio-item.entity';
+import { Feedback } from '../../feedbacks/entities/feedback.entity';
 
 export enum Provider {
   LOCAL = 'local',
@@ -94,4 +95,9 @@ export class User extends BaseEntity {
     cascade: true,
   })
   portfolioItems: PortfolioItem[];
+
+  @OneToMany(() => Feedback, (feedback) => feedback.user, {
+    cascade: true,
+  })
+  feedbacks: Feedback[];
 }
