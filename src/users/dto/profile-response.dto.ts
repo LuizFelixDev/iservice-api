@@ -5,6 +5,7 @@ export class ProfileResponseDto {
   phoneNumber: string;
   photoUrl: string;
   isOnline: boolean;
+  views: number;
   location: {
     type: string;
     coordinates: number[];
@@ -18,6 +19,7 @@ export class ProfileResponseDto {
     dto.phoneNumber = profile.phoneNumber;
     dto.photoUrl = profile.photoUrl;
     dto.isOnline = profile.isOnline;
+    dto.views = profile.views ?? 0;
 
     dto.location = profile.location
       ? {
