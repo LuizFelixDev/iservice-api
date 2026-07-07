@@ -383,4 +383,9 @@ export class UsersService {
 
     return newCertificate;
   }
+
+  async deleteAccount(userId: string): Promise<void> {
+    const user = await this.findById(userId);
+    await this.userRepository.softDelete(user.id);
+  }
 }

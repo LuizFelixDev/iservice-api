@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
+  Delete,
 } from '@nestjs/common';
 import {
   FileInterceptor,
@@ -121,5 +122,12 @@ export class UsersController {
     @Body() createCertificateDto: CreateCertificateDto,
   ) {
     return this.usersService.addCertificate(req.user.id, createCertificateDto);
+  }
+
+  @Delete('me')
+  @UseGuards(JwtAuthGuard)
+  async deleteAccount(@Req() req: RequestWithUser) {
+    await this.usersService.deleteAccount(req.user.id);
+    return { message: 'Conta excluída com sucesso' };
   }
 }

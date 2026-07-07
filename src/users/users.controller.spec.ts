@@ -23,6 +23,7 @@ describe('UsersController', () => {
     addPortfolioItem: jest.fn(),
     addCertificate: jest.fn(),
     updateStatus: jest.fn(),
+    deleteAccount: jest.fn(),
   };
 
   const req = { user: { id: 'u1', email: 'ismael@teste.com' } };
@@ -65,7 +66,10 @@ describe('UsersController', () => {
     });
 
     it('PATCH /users/me/status delega updateStatus', async () => {
-      usersService.updateStatus.mockResolvedValue({ message: 'ok', isOnline: true });
+      usersService.updateStatus.mockResolvedValue({
+        message: 'ok',
+        isOnline: true,
+      });
 
       await controller.updateStatus(req, { isOnline: true });
 
@@ -115,6 +119,13 @@ describe('UsersController', () => {
         {} as unknown as CreateCertificateDto,
       );
       expect(usersService.addCertificate).toHaveBeenCalled();
+    });
+
+    it('DELETE /users/me - delega deleteAccount', async () => {
+      usersService.deleteAccount.mockResolvedValue(undefined);
+      const result = await controller.deleteAccount(req);
+      expect(usersService.deleteAccount).toHaveBeenCalledWith('u1');
+      expect(result).toEqual({ message: 'Conta excluída com sucesso' });
     });
   });
 });

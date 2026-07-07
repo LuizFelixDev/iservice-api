@@ -5,6 +5,7 @@ import {
   JoinTable,
   OneToOne,
   OneToMany,
+  DeleteDateColumn,
 } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Role } from '../../roles/entities/role.entity';
@@ -94,4 +95,7 @@ export class User extends BaseEntity {
     cascade: true,
   })
   portfolioItems: PortfolioItem[];
+
+  @DeleteDateColumn()
+  deletedAt: Date;
 }

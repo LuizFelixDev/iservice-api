@@ -33,6 +33,7 @@ describe('UsersService - US02 (Manter Perfil)', () => {
     create: jest.fn(),
     count: jest.fn(),
     find: jest.fn(),
+    softDelete: jest.fn(),
   };
   const rolesService = { findByName: jest.fn() };
 
@@ -342,7 +343,11 @@ describe('UsersService - US02 (Manter Perfil)', () => {
       it('deve retornar o usuário validado sem a senha se a senha bater', async () => {
         const password = 'password123';
         const hashedPassword = await bcrypt.hash(password, 1);
-        const mockUser = { id: 'u1', email: 'test@test.com', password: hashedPassword };
+        const mockUser = {
+          id: 'u1',
+          email: 'test@test.com',
+          password: hashedPassword,
+        };
         userRepository.findOne.mockResolvedValue(mockUser);
 
         const result = await service.validateUser('test@test.com', password);
@@ -353,16 +358,26 @@ describe('UsersService - US02 (Manter Perfil)', () => {
       it('deve retornar null se a senha estiver incorreta', async () => {
         const password = 'password123';
         const hashedPassword = await bcrypt.hash(password, 1);
-        const mockUser = { id: 'u1', email: 'test@test.com', password: hashedPassword };
+        const mockUser = {
+          id: 'u1',
+          email: 'test@test.com',
+          password: hashedPassword,
+        };
         userRepository.findOne.mockResolvedValue(mockUser);
 
-        const result = await service.validateUser('test@test.com', 'wrongpassword');
+        const result = await service.validateUser(
+          'test@test.com',
+          'wrongpassword',
+        );
         expect(result).toBeNull();
       });
 
       it('deve retornar null se o usuário não for encontrado', async () => {
         userRepository.findOne.mockResolvedValue(null);
-        const result = await service.validateUser('notfound@test.com', 'password');
+        const result = await service.validateUser(
+          'notfound@test.com',
+          'password',
+        );
         expect(result).toBeNull();
       });
     });
@@ -377,7 +392,9 @@ describe('UsersService - US02 (Manter Perfil)', () => {
 
       it('deve lançar NotFoundException se o usuário não for encontrado', async () => {
         userRepository.findOne.mockResolvedValue(null);
-        await expect(service.findById('notFound')).rejects.toThrow(NotFoundException);
+        await expect(service.findById('notFound')).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
 
@@ -392,7 +409,9 @@ describe('UsersService - US02 (Manter Perfil)', () => {
 
       it('deve lançar NotFoundException se o usuário não for encontrado', async () => {
         userRepository.findOne.mockResolvedValue(null);
-        await expect(service.findMe('notFound')).rejects.toThrow(NotFoundException);
+        await expect(service.findMe('notFound')).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
 
@@ -402,7 +421,12 @@ describe('UsersService - US02 (Manter Perfil)', () => {
           id: 'u1',
           firstName: 'Prof',
           lastName: 'User',
-          profile: { bio: 'Dev', roleTitle: 'Engineer', photoUrl: 'foto.jpg', highlights: {} },
+          profile: {
+            bio: 'Dev',
+            roleTitle: 'Engineer',
+            photoUrl: 'foto.jpg',
+            highlights: {},
+          },
           certificates: [],
           portfolioItems: [],
         };
@@ -415,7 +439,34 @@ describe('UsersService - US02 (Manter Perfil)', () => {
 
       it('deve lançar NotFoundException se o usuário não existir ao buscar portfolio', async () => {
         userRepository.findOne.mockResolvedValue(null);
-        await expect(service.getPortfolio('notFound')).rejects.toThrow(NotFoundException);
+        await expect(service.getPortfolio('notFound')).rejects.toThrow(
+          NotFoundException,
+        );
+      });
+    });
+
+    describe('deleteAccount', () => {
+      it('deve soft-deletar o usuário se ele existir', async () => {
+        const mockUser = { id: 'u1' };
+        userRepository.findOne.mockResolvedValue(mockUser);
+        userRepository.softDelete.mockResolvedValue({ affected: 1 });
+
+        await service.deleteAccount('u1');
+
+        expect(userRepository.findOne).toHaveBeenCalledWith({
+          where: { id: 'u1' },
+          relations: ['roles', 'profile'],
+        });
+        expect(userRepository.softDelete).toHaveBeenCalledWith('u1');
+      });
+
+      it('deve lançar NotFoundException se o usuário não for encontrado', async () => {
+        userRepository.findOne.mockResolvedValue(null);
+
+        await expect(service.deleteAccount('notFound')).rejects.toThrow(
+          NotFoundException,
+        );
+        expect(userRepository.softDelete).not.toHaveBeenCalled();
       });
     });
   });

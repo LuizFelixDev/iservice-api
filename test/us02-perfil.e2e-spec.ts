@@ -118,6 +118,23 @@ describe('US02 - Manter Perfil (e2e)', () => {
     expect(bodyUser.user.roles).not.toContain('PROFESSIONAL');
   });
 
+  it('deve permitir deletar a conta (DELETE /users/me) e bloquear login subsequente', async () => {
+    const res = await request(app.getHttpServer())
+      .delete('/users/me')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    const body = res.body as { message: string };
+    expect(body.message).toBe('Conta excluída com sucesso');
+
+    // Tentar fazer login com o usuário excluído deve falhar
+    const loginFail = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email, password: senha });
+
+    expect(loginFail.status).toBe(401);
+  });
+
   afterAll(async () => {
     await app.close();
   });
