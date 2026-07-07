@@ -11,6 +11,7 @@ import { WorkersModule } from './workers/workers.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { UploadModule } from './upload/upload.module';
 import { HelpModule } from './help/help.module'; // <- adicionar
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { HelpModule } from './help/help.module'; // <- adicionar
     ReviewsModule,
     UploadModule,
     HelpModule, // <- adicionar
+    HealthModule,
   ],
   providers: [
     {
